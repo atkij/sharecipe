@@ -1,0 +1,31 @@
+[project]
+name = "website"
+version = "1.0.0"
+description = "My useful website"
+readme = "README.txt"
+dependencies = [
+	"flask",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "website"
+
+[tool.flit.sdist]
+include = [
+	"tests/",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+branch = true
+source = ["website", "tests"]
