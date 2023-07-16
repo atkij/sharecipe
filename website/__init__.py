@@ -1,0 +1,88 @@
+import os
+from flask import Flask, render_template
+
+def create_app():
+    # create and configure the app
+    app = Flask(__name__)
+
+    app.config.from_mapping(DATABASE=os.path.join(app.instance_path, 'website.db'),)
+
+    CONFIG_TYPE = os.getenv('CONFIG_TYPE', default='config.DevelopmentConfig')
+    app.config.from_object(CONFIG_TYPE)
+
+    try:
+        os.makedirs(app.instance_path)
+    except OSError:
+        pass
+
+    @app.context_processor
+    def utility_processor():
+        def check_permission(available, required):
+            if available & required == required:
+                return True
+            else:
+                return False
+        return dict(check_permission=check_permission)
+
+    # register blueprints
+    register_blueprints(app)
+
+    # initialize extensions
+    initialize_extensions(app)
+
+    # configure logging
+    #configure_logging(app)
+
+    # register error handlers
+    register_error_handlers(app)
+
+    return app
+
+def register_blueprints(app):
+    from website.main import main_blueprint
+    from website.auth import auth_blueprint
+    from website.minecraft import minecraft_blueprint
+    
+    app.register_blueprint(main_blueprint)
+    app.register_blueprint(auth_blueprint)
+    app.register_blueprint(minecraft_blueprint)
+
+def initialize_extensions(app):
+    from website import db
+    db.init_app(app)
+
+def register_error_handlers(app):
+    @app.errorhandler(400)
+    def bad_request(e):
+        return render_template('400.html'), 400
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('403.html'), 403
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        return render_template('405.html'), 405
+
+    @app.errorhandler(500)
+    def server_error(e):
+        return render_template('500.html'), 500
+
+def configure_logging(app):
+    import logging
+    from flask.logging import default_handler
+    from logging.handlers import FileHandler
+
+    #app.logger.removeHandler(default_handler)
+
+    file_handler = FileHandler('website.log')
+    file_handler.setLevel(logging.INFO)
+
+    file_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(filename)s: %(lineno)d]')
+    file_handler.setFormatter(file_formatter)
+
+    app.logger.addHandler(file_handler)

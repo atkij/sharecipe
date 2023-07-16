@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		{% block head %}
+		<title>{% block title %}{% endblock %} - My Website</title>
+		{% endblock %}
+	</head>
+	<body>
+		<header>
+			{% block header %}
+			<h1>My Website</h1>
+			{% endblock %}
+		</header>
+		<nav>
+			{% block nav %}
+			{% if g.user and check_permission(g.user['permissions'], 32) %}
+			<li><a href="{{ url_for('minecraft.index') }}">Minecraft</a></li>
+			{% endif %}
+			{% if g.user %}
+			<li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
+			{% else %}
+			<li><a href="{{ url_for('auth.register') }}">Register</a></li>
+			<li><a href="{{ url_for('auth.login') }}">Log In</a></li>
+			{% endif %}
+			{% endblock %}
+		</nav>
+		<main>
+			{% block main %}
+			<h1>{{ self.title() }}</h1>
+			{% for message in get_flashed_messages() %}
+			<p>{{ message }}</p>
+			{% endfor %}
+			<section>{% block content %}{% endblock %}</section>
+			{% endblock %}
+		</main>
+		<footer>
+			{% block footer %}
+			<p>&copy; Copyright 2023 by Joel Atkinson</p>
+			{% endblock %}
+		</footer>
+	</body>
+</html>
+

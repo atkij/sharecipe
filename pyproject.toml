@@ -2,9 +2,11 @@
 name = "website"
 version = "1.0.0"
 description = "My useful website"
-readme = "README.txt"
+readme = "README.md"
 dependencies = [
+	"docker",
 	"flask",
+	"python-dotenv",
 ]
 
 [project.optional-dependencies]
