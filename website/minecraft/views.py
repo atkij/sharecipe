@@ -1,6 +1,6 @@
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
-from website.auth import login_required
+from website.util import login_required
 from website.db import get_db
 
 from . import minecraft_blueprint, server

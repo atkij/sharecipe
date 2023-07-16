@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, session, g
 
 def create_app():
     # create and configure the app
@@ -23,9 +23,22 @@ def create_app():
             else:
                 return False
         return dict(check_permission=check_permission)
+    
+    @app.before_request
+    def load_user():
+        if session.get('user_id') is None:
+            g.user = None
+        else:
+            g.user = {}
+            g.user['id'] = session.get('user_id')
+            g.user['username'] = session.get('username')
+            g.user['permissions'] = session.get('permissions')
 
     # register blueprints
     register_blueprints(app)
+    
+    # register index
+    register_index(app)
 
     # initialize extensions
     initialize_extensions(app)
@@ -39,13 +52,14 @@ def create_app():
     return app
 
 def register_blueprints(app):
-    from website.main import main_blueprint
     from website.auth import auth_blueprint
-    from website.minecraft import minecraft_blueprint
+    from website.user import user_blueprint
+    #from website.minecraft import minecraft_blueprint
     
-    app.register_blueprint(main_blueprint)
     app.register_blueprint(auth_blueprint)
-    app.register_blueprint(minecraft_blueprint)
+    app.register_blueprint(user_blueprint)
+    #app.register_blueprint(minecraft_blueprint)
+    app.add_url_rule('/', endpoint='index')
 
 def initialize_extensions(app):
     from website import db
@@ -86,3 +100,8 @@ def configure_logging(app):
     file_handler.setFormatter(file_formatter)
 
     app.logger.addHandler(file_handler)
+
+def register_index(app):
+    @app.route('/')
+    def index():
+        return render_template('index.html')

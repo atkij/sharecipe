@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import flash, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from website.db import get_db
@@ -21,14 +21,24 @@ def register():
         if error is None:
             try:
                 db.execute(
-                        'INSERT INTO user (username, password, permissions) VALUES (?, ?, ?)',
+                        'INSERT INTO user (username, password, permissions, last_login) VALUES (?, ?, ?, datetime("now"))',
                         (username, generate_password_hash(password), 0b11)
                         )
                 db.commit()
             except db.IntegrityError:
                 error = f'User {username} is already registered.'
             else:
-                return redirect(url_for('auth.login'))
+                user = db.execute('SELECT * FROM user WHERE username = ?', (username,)).fetchone()
+                
+                if user is None:
+                    error = 'An unknown error occurred.  Please try again.'
+                else:
+                    session.clear()
+                    session['user_id'] = user['id']
+                    session['username'] = user['username']
+                    session['permissions'] = user['permissions']
+                    
+                    return redirect(url_for('index'))
 
         flash(error)
 
@@ -52,11 +62,13 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['permissions'] = user['permissions']
 
             db.execute('UPDATE user SET last_login = datetime("now") WHERE id = ?', (user['id'],))
             db.commit()
 
-            return redirect(url_for('main.index'))
+            return redirect(url_for('index'))
 
         flash(error)
 

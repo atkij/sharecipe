@@ -9,3 +9,12 @@ CREATE TABLE user (
 	created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	last_login TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE follower (
+	user_id INTEGER NOT NULL,
+	follower_id INTEGER NOT NULL,
+	CHECK (user_id != follower_id),
+	FOREIGN KEY (user_id) REFERENCES user (id),
+	FOREIGN KEY (follower_id) REFERENCES user (id),
+	PRIMARY KEY (user_id, follower_id)
+)
