@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}My Account{% endblock %}
+
+{% block content %}
+<h3>{{ user['username'] }}</h3>
+<p><a href="{{ url_for('user.index', id=g.user['id']) }}">View public profile</a></p>
+<p>Joined {{ joined }}</p>
+<p>Last login at {{ last_login }}</p>
+<p>{{ followers }} followers</p>
+<p>{{ following }} following</p>
+<p><a href="{{ url_for('account.password') }}">Change password</a></p>
+<p><a href="{{ url_for('account.delete') }}">Delete account</a></p>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Delete Account{% endblock %}
+
+{% block content %}
+{% if success %}
+<p>Account deletion successful.</p>
+<p>Return <a href="{{ url_for('index') }}">home</a>?</p>
+{% else %}
+<p>Are you sure you would like to delete your account?</p>
+<p>Enter your password below to continue.</p>
+<form method="post">
+	<label for="password">Password</label>
+	<input type="password" name="password" id="password" required>
+	<input type="submit" value="Delete Account">
+</form>
+{% endif %}
+{% endblock %}

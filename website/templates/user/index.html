@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}{{ user['username'] }}{% endblock %}
+
+{% block content %}
+<p>Joined {{ joined }}.</p>
+<p>Active {{ active }} days ago.</p>
+<p>Follows {{ following }} people.</p>
+<p>Has {{ followers }} followers.</p>
+{% if g.user and g.user['id'] != user['id'] %}
+{% if follows %}
+<a href="{{ url_for('user.unfollow', id=user['id']) }}">Unfollow</a>
+{% else %}
+<a href="{{ url_for('user.follow', id=user['id']) }}">Follow</a>
+{% endif %}
+{% endif %}
+{% endblock %}
