@@ -64,6 +64,8 @@ class BedrockServer():
                 online += 1
             elif 'Player disconnected' in line:
                 online -= 1
+            elif 'Quit correctly' in line:
+                break
 
         return online
 
