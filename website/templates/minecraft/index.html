@@ -2,17 +2,17 @@
 {% block title %}Minecraft{% endblock %}
 
 {% block content %}
-{% if g.user and check_permission(g.user['permissions'], 32) %}
-<p>Status: {{ data['status'] }}</p>
-<p>Online: {{ data['online'] }}</p>
-<pre style="padding: 5px; border: 1px solid black;">{{ data['logs'] }}</pre>
-<br>
-{% endif %}
 {% if g.user and check_permission(g.user['permissions'], 16) %}
 {% if data['status'] == 4 %}
 <a href="{{ url_for('minecraft.start') }}">Start</a>
 {% elif data['status'] == 1 %}
 <a href="{{ url_for('minecraft.stop') }}">Stop</a>
 {% endif %}
+{% endif %}
+{% if g.user and check_permission(g.user['permissions'], 32) %}
+<p>Status: {{ data['status'] }}</p>
+<p>Online: {{ data['online'] }}</p>
+<pre style="padding: 5px; border: 1px solid black;">{{ data['logs'] }}</pre>
+<br>
 {% endif %}
 {% endblock %}

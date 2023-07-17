@@ -1,5 +1,5 @@
 DROP TABLE IF EXISTS user;
-DROP TABLE IF EXISTS permission;
+DROP TABLE IF EXISTS follower;
 
 CREATE TABLE user (
 	id INTEGER NOT NULL PRIMARY KEY,
@@ -14,7 +14,7 @@ CREATE TABLE follower (
 	user_id INTEGER NOT NULL,
 	follower_id INTEGER NOT NULL,
 	CHECK (user_id != follower_id),
-	FOREIGN KEY (user_id) REFERENCES user (id),
-	FOREIGN KEY (follower_id) REFERENCES user (id),
+	FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	FOREIGN KEY (follower_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE,
 	PRIMARY KEY (user_id, follower_id)
-)
+);

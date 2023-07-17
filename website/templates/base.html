@@ -13,10 +13,12 @@
 		</header>
 		<nav>
 			{% block nav %}
-			{% if g.user and check_permission(g.user['permissions'], 32) %}
+			<li><a href="{{ url_for('index') }}">Home</a></li>
+			{#{% if g.user and check_permission(g.user['permissions'], 32) %}#}
 			<li><a href="{{ url_for('minecraft.index') }}">Minecraft</a></li>
-			{% endif %}
+			{#{% endif %}#}
 			{% if g.user %}
+			<li><a href="{{ url_for('account.index') }}">My Account</a></li>
 			<li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
 			{% else %}
 			<li><a href="{{ url_for('auth.register') }}">Register</a></li>
@@ -35,7 +37,7 @@
 		</main>
 		<footer>
 			{% block footer %}
-			<p>&copy; Copyright 2023 by Joel Atkinson</p>
+			<p>Copyright &copy; 2023 Joel Atkinson</p>
 			{% endblock %}
 		</footer>
 	</body>

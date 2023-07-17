@@ -3,12 +3,16 @@ from flask import Flask, render_template, session, g
 
 def create_app():
     # create and configure the app
-    app = Flask(__name__)
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.from_mapping(
+            SECRET_KEY='dev',
+            DATABASE=os.path.join(app.instance_path, 'website.db'),
+            )
 
-    app.config.from_mapping(DATABASE=os.path.join(app.instance_path, 'website.db'),)
-
-    CONFIG_TYPE = os.getenv('CONFIG_TYPE', default='config.DevelopmentConfig')
-    app.config.from_object(CONFIG_TYPE)
+    if test_config is None:
+        app.config.from_pyile('config.py', silent=True)
+    else:
+        app.config.from_mapping(test_config)
 
     try:
         os.makedirs(app.instance_path)
@@ -52,14 +56,15 @@ def create_app():
     return app
 
 def register_blueprints(app):
+    from website.account import account_blueprint
     from website.auth import auth_blueprint
+    from website.minecraft import minecraft_blueprint
     from website.user import user_blueprint
-    #from website.minecraft import minecraft_blueprint
     
+    app.register_blueprint(account_blueprint)
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(minecraft_blueprint)
     app.register_blueprint(user_blueprint)
-    #app.register_blueprint(minecraft_blueprint)
-    app.add_url_rule('/', endpoint='index')
 
 def initialize_extensions(app):
     from website import db

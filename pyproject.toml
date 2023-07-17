@@ -1,9 +1,10 @@
 [project]
 name = "website"
-version = "1.0.0"
+version = "1.1.0"
 description = "My useful website"
 readme = "README.md"
 dependencies = [
+	"docker",
 	"flask",
 	"python-dotenv",
 ]
