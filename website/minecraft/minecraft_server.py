@@ -56,14 +56,15 @@ class BedrockServer():
         if self.status() != 1:
             return 0
 
-        self.run('list')
+        online = 0
 
         lines = self.logs().split('\r\n')
         for line in reversed(lines):
-            online = re.findall('There are (\d)/10 players online', line)
-            if len(online) > 0:
-                return int(online[0])
+            if 'Player connected' in line:
+                online += 1
+            elif 'Player disconnected' in line:
+                online -= 1
 
-        return 0
+        return online
 
 
