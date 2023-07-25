@@ -1,5 +1,5 @@
 import functools
-from flask import abort, g
+from flask import abort, g, redirect
 
 def login_required(permissions=0):
     def decorator(view):

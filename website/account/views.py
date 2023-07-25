@@ -13,17 +13,17 @@ def index():
     db = get_db()
 
     user = db.execute(
-            'SELECT id, username, last_login, created FROM user WHERE id = ?', (g.user['id'],)
+            'SELECT user_id, username, last_login, created FROM user WHERE user_id = ?', (g.user['user_id'],)
             ).fetchone()
 
     if user is None:
         abort(500)
 
     followers = db.execute(
-            'SELECT COUNT(*) FROM follower WHERE user_id = ?', (g.user['id'],)
+            'SELECT COUNT(*) FROM follower WHERE user_id = ?', (g.user['user_id'],)
             ).fetchone()
     following = db.execute(
-            'SELECT COUNT(*) FROM follower WHERE follower_id = ?', (g.user['id'],)
+            'SELECT COUNT(*) FROM follower WHERE follower_id = ?', (g.user['user_id'],)
             ).fetchone()
 
     joined = datetime.fromisoformat(user['created']).strftime('%d/%m/%Y')
@@ -43,7 +43,7 @@ def password():
         error = None
 
         user = db.execute(
-                'SELECT * FROM user WHERE id = ?', (g.user['id'],)
+                'SELECT * FROM user WHERE user_id = ?', (g.user['user_id'],)
                 ).fetchone()
 
         if user is None:
@@ -55,8 +55,8 @@ def password():
 
         if error is None:
             db.execute(
-                    'UPDATE user SET password = ? WHERE id = ?',
-                    (generate_password_hash(new_password), g.user['id'])
+                    'UPDATE user SET password = ? WHERE user_id = ?',
+                    (generate_password_hash(new_password), g.user['user_id'])
                     )
             db.commit()
 
@@ -76,7 +76,7 @@ def delete():
         error = None
 
         user = db.execute(
-                'SELECT * FROM user WHERE id = ?', (g.user['id'],)
+                'SELECT * FROM user WHERE user_id = ?', (g.user['user_id'],)
                 ).fetchone()
 
         if user is None:
@@ -85,7 +85,7 @@ def delete():
             error = 'Incorrect password.'
 
         if error is None:
-            db.execute('DELETE FROM user WHERE id = ?', (g.user['id'],))
+            db.execute('DELETE FROM user WHERE user_id = ?', (g.user['user_id'],))
             db.commit()
 
             session.clear()

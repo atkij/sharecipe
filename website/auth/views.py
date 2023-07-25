@@ -34,7 +34,7 @@ def register():
                     error = 'An unknown error occurred.  Please try again.'
                 else:
                     session.clear()
-                    session['user_id'] = user['id']
+                    session['user_id'] = user['user_id']
                     session['username'] = user['username']
                     session['permissions'] = user['permissions']
                     
@@ -65,7 +65,7 @@ def login():
             session['username'] = user['username']
             session['permissions'] = user['permissions']
 
-            db.execute('UPDATE user SET last_login = datetime("now") WHERE id = ?', (user['id'],))
+            db.execute('UPDATE user SET last_login = datetime("now") WHERE user_id = ?', (user['id'],))
             db.commit()
 
             return redirect(url_for('index'))
