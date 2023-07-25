@@ -4,7 +4,6 @@ version = "1.1.1"
 description = "My useful website"
 readme = "README.md"
 dependencies = [
-	"docker",
 	"flask",
 	"python-dotenv",
 ]
