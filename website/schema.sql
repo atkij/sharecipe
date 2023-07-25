@@ -1,4 +1,3 @@
-
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS follower;
 DROP TABLE IF EXISTS recipe_category;
@@ -22,21 +21,17 @@ CREATE TABLE follower (
 	PRIMARY KEY (user_id, follower_id)
 );
 
-CREATE TABLE recipe_category (
-	category_id INTEGER NOT NULL PRIMARY KEY,
-	category TEXT NOT NULL
-);
-
 CREATE TABLE recipe (
 	recipe_id INTEGER NOT NULL PRIMARY KEY,
 	user_id INTEGER NOT NULL,
-	category_id INTEGER,
+	title TEXT NOT NULL,
+	created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	ingredients TEXT NOT NULL,
 	method TEXT NOT NULL,
-	time INTEGER NOT NULL CHECK (time > 0 AND time < 6),
-	difficulty INTEGER NOT NULL CHECK (difficulty > 0 AND difficulty < 6),
+	time INTEGER NOT NULL CHECK (time > 0),
+	difficulty INTEGER NOT NULL CHECK (difficulty > 0 AND difficulty <= 5),
 	servings INTEGER NOT NULL CHECK (servings > 0),
 	tags TEXT,
-	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	FOREIGN KEY (category_id) REFERENCES recipe_category (category_id) ON UPDATE CASCADE ON DELETE SET NULL
+	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE
 );

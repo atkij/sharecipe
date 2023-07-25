@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}{{ recipe['title'] }}{% endblock %}
+
+{% block content %}
+<p>By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></p>
+<p>Created {{ recipe['created'] }}</p>
+<p>Updated {{ recipe['updated'] }}</p>
+<p>Time {{ recipe['time'] }} minutes</p>
+<p>Difficulty {{ recipe['difficulty'] }}/5</p>
+<p>Serves {{ recipe['servings'] }}</p>
+
+<h3>Ingredients</h3>
+<ul>
+	{% for ingredient in ingredients %}
+	<li><p>{{ ingredient }}</p></li>
+	{% endfor %}
+</ul>
+
+<h3>Method</h3>
+<ol>
+	{% for instruction in method %}
+	<li>
+		{% for paragraph in instruction %}
+		<p>{{ paragraph }}</p>
+		{% endfor %}
+	</li>
+	{% endfor %}
+</ol>
+
+<p>{% for tag in tags %}<span>{{ tag }}</span>{% endfor %}</p>
+{% endblock %}

@@ -58,10 +58,12 @@ def create_app(test_config=None):
 def register_blueprints(app):
     from website.account import account_blueprint
     from website.auth import auth_blueprint
+    from website.recipe import recipe_blueprint
     from website.user import user_blueprint
     
     app.register_blueprint(account_blueprint)
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(recipe_blueprint)
     app.register_blueprint(user_blueprint)
 
 def initialize_extensions(app):
