@@ -39,7 +39,7 @@ header, footer {
 }
 
 header {
-	padding: 0 20px;
+	padding: 0 2rem;
 }
 
 header a {
@@ -101,7 +101,7 @@ nav input#menu-checkbox:checked ~ ul {
 nav a, nav label{
 	display: block;
 	text-align: center;
-	padding: 10px 12px;
+	padding: 0.6rem 0.8rem;
 	color: white;
 	text-decoration: none;
 	font-size: 1em;
@@ -121,7 +121,7 @@ nav button {
 	color: white;
 	border: none;
 	font-family: serif;
-	font-size: 1em;
+	font-size: 1rem;
 	cursor: pointer;
 	transition: 0.1s;
 }
@@ -134,9 +134,13 @@ nav button:active {
 	background-color: var(--colour5);
 }
 
+nav button:focus {
+	background-color: var(--colour5);
+}
+
 main {
 	flex-grow: 1;
-	padding: 20px;
+	padding: 2rem;
 }
 
 form span {
@@ -145,8 +149,8 @@ form span {
 
 form input {
 	width: 100%;
-	margin: 10px 0 30px 0;
-	padding: 8px;
+	margin: 1rem 0 2rem 0;
+	padding: 0.5rem;
 	border: 2px solid grey;
 	outline: none;
 	transition: 0.1s;
@@ -162,9 +166,10 @@ form input:focus {
 
 form textarea {
 	width: 100%;
-	margin: 10px 0 30px 0;
-	padding: 8px;
+	margin: 1rem 0 2rem 0;
+	padding: 0.5rem;
 	border: 2px solid grey;
+	font-family: inherit;
 	resize: vertical;
 	outline: none;
 	transition: 0.1s;
@@ -181,7 +186,7 @@ form textarea:focus {
 form input[type="submit"] {
 	width: auto;
 	margin: 0;
-	padding: 10px;
+	padding: 0.6rem;
 	float: right;
 	background-color: var(--colour1);
 	color: white;
@@ -197,15 +202,44 @@ form input[type="submit"]:focus {
 	background-color: var(--colour5);
 }
 
+form.search {
+	display: flex;
+	gap: 1rem;
+}
+
+form.search input[type="search"] {
+	flex: 1;
+	margin: auto;
+}
+
+form.search input[type="submit"] {
+	float: none;
+	margin: auto;
+}
+
+div.recipe-list {
+	display: flex;
+	flex-flow: row wrap;
+	margin: 1rem 0;
+	gap: 1rem;
+}
+
+div.recipe-card {
+	padding: 0 2rem;
+	border: 1px solid grey;
+	border-radius: 0.5rem;
+	flex: 0 1 100%;
+}
+
 footer {
-	padding: 10px;
+	padding: 0.6rem;
 	background-color: var(--colour4);
 	color: white;
 	text-align: center;
 }
 
-@media only screen and (min-width: 768px) {
-	/* for desktop */
+@media only screen and (min-width: 50rem) {
+	/* small */
 	nav {
 		position: sticky;
 		top: 0;
@@ -235,7 +269,7 @@ footer {
 		display: block;
 		margin: 0;
 		text-align: center;
-		padding: 10px 12px;
+		padding: 0.6rem 0.8rem;
 	}
 
 	nav .dropdown-content {
@@ -257,5 +291,23 @@ footer {
 
 	nav .dropdown-content a {
 		text-align: right;
+	}
+	
+	div.recipe-card {
+		flex-basis: calc(50% - 0.5rem);
+	}
+
+@media only screen and (min-width: 75rem) {
+	/* medium */
+	div.recipe-card {
+		flex-basis: calc((100% / 3) - (2rem / 3));
+	}
+}
+
+@media only screen and (min-width: 100rem) {
+	/* large */
+	div.recipe-card {
+		flex-basis: calc(25% - 0.75rem);
+	}
 	}
 }

@@ -29,6 +29,27 @@ def view(recipe_id):
 
     return render_template('recipe/view.html', recipe=recipe, ingredients=ingredients, method=method, tags=tags)
 
+@bp.route('/search')
+def search():
+    search = request.args.get('q', '').strip()
+    recipes = None
+
+    if search:
+        keywords = search[:100].split(' ')
+        keywords = list(map(lambda w: '%'+w+'%', keywords))
+
+        db = get_db()
+        query = 'SELECT recipe.*, (' + ' + '.join(['(tags LIKE ?)']*len(keywords)) + ') AS best_match FROM recipe ORDER BY best_match DESC LIMIT 10'
+        print(query)
+        print(keywords)
+
+        recipes = db.execute(query, keywords).fetchall()
+
+    if len(search) > 100:
+        flash('Queries are restricted to 100 characters maximum.')
+
+    return render_template('recipe/search.html', recipes=recipes)
+
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
