@@ -5,7 +5,6 @@ description = "My useful website"
 readme = "README.md"
 dependencies = [
 	"flask",
-	"python-dotenv",
 ]
 
 [project.optional-dependencies]
@@ -15,18 +14,9 @@ test = ["pytest"]
 requires = ["flit_core<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.flit.module]
-name = "website"
-
-[tool.flit.sdist]
-include = [
-	"tests/",
-]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-filterwarnings = ["error"]
 
 [tool.coverage.run]
 branch = true
-source = ["website", "tests"]
+source = ["website"]

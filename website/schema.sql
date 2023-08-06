@@ -1,6 +1,5 @@
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS follower;
-DROP TABLE IF EXISTS recipe_category;
 DROP TABLE IF EXISTS recipe;
 
 CREATE TABLE user (
