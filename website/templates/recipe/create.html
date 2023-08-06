@@ -3,26 +3,39 @@
 
 {% block content %}
 <form method="post">
+	<p class="error">{{ error['form'] }}</p>
+
 	<label for="title">Title</label>
-	<input name="title" id="title">
+	<span class="error">{{ error['title'] }}</span>
+	<input name="title" id="title" value="{{ request.form['title'] }}" maxlength="50" required>
+
+	<label for="description">Description</label>
+	<span class="error">{{ error['description'] }}</span>
+	<textarea name="description" id="description" rows="4" maxlength="400">{{ request.form['description'] }}</textarea>
 
 	<label for="time">Time</label>
-	<input name="time" id="time">
+	<span class="error">{{ error['time'] }}</span>
+	<input type="number" name="time" id="time" value="{{ request.form['time'] }}" min="0">
 
 	<label for="servings">Serves</label>
-	<input name="servings" id="servings">
+	<span class="error">{{ error['servings'] }}</span>
+	<input type="number" name="servings" id="servings" value="{{ request.form['servings'] }}" min="0">
 
 	<label for="difficulty">Difficulty</label>
-	<input name="difficulty" id="difficulty">
+	<span class="error">{{ error['difficulty'] }}</span>
+	<input type="number" name="difficulty" id="difficulty" value="{{ request.form['difficulty'] }}" min="1" max="5">
 
 	<label for="ingredients">Ingredients</label>
-	<textarea name="ingredients" id="ingredients"></textarea>
+	<span class="error">{{ error['ingredients'] }}</span>
+	<textarea name="ingredients" id="ingredients" rows="20" maxlength="1000" required>{{ request.form['ingredients'] }}</textarea>
 
 	<label for="method">Method</label>
-	<textarea name="method" id="method"></textarea>
+	<span class="error">{{ error['method'] }}</span>
+	<textarea name="method" id="method" rows="30" maxlength="4000" required>{{ request.form['method'] }}</textarea>
 
 	<label for="tags">Tags</label>
-	<input name="tags" id="tags">
+	<span class="error">{{ error['tags'] }}</span>
+	<input name="tags" id="tags" value="{{ request.form['tags'] }}" maxlength="100">
 
 	<input type="submit" value="Create Recipe">
 </form>

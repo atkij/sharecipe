@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Update Recipe{% endblock %}
+
+{% block content %}
+<form method="post">
+	<p class="error">{{ error['form'] }}</p>
+
+	<label for="title">Title</label>
+	<span class="error">{{ error['title'] }}</span>
+	<input name="title" id="title" value="{{ request.form['title'] or recipe['title'] }}" maxlength="50" required>
+
+	<label for="description">Description</label>
+	<span class="error">{{ error['description'] }}</span>
+	<textarea name="description" id="description" rows="4" maxlength="400">{{ request.form['description'] or recipe['description'] }}</textarea>
+
+	<label for="time">Time</label>
+	<span class="error">{{ error['time'] }}</span>
+	<input type="number" name="time" id="time" value="{{ request.form['time'] or recipe['time'] }}" min="0">
+
+	<label for="servings">Serves</label>
+	<span class="error">{{ error['servings'] }}</span>
+	<input type="number" name="servings" id="servings" value="{{ request.form['servings'] or recipe['servings'] }}" min="0">
+
+	<label for="difficulty">Difficulty</label>
+	<span class="error">{{ error['difficulty'] }}</span>
+	<input type="number" name="difficulty" id="difficulty" value="{{ request.form['difficulty'] or recipe['difficulty'] }}" min="1" max="5">
+
+	<label for="ingredients">Ingredients</label>
+	<span class="error">{{ error['ingredients'] }}</span>
+	<textarea name="ingredients" id="ingredients" rows="10" maxlength="1000" required>{{ request.form['ingredients'] or recipe['ingredients'] }}</textarea>
+
+	<label for="method">Method</label>
+	<span class="error">{{ error['method'] }}</span>
+	<textarea name="method" id="method" rows="30" maxlength="4000" required>{{ request.form['method'] or recipe['method'] }}</textarea>
+
+	<label for="tags">Tags</label>
+	<span class="error">{{ error['tags'] }}</span>
+	<input name="tags" id="tags" value="{{ request.form['tags'] or recipe['tags'] }}" maxlength="100">
+
+	<input type="submit" value="Update Recipe">
+</form>
+{% endblock %}

@@ -9,8 +9,12 @@
 <p>Are you sure you would like to delete your account?</p>
 <p>Enter your password below to continue.</p>
 <form method="post">
+	<p class="error">{{ error['form'] }}</p>
+
 	<label for="password">Password</label>
-	<input type="password" name="password" id="password" required>
+	<span class="error">{{ error['password'] }}</span>
+	<input type="password" name="password" id="password" maxlength="256" required>
+
 	<input type="submit" value="Delete Account">
 </form>
 {% endif %}

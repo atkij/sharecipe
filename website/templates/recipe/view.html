@@ -3,6 +3,7 @@
 
 {% block content %}
 <p>By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></p>
+<p>{{ recipe['description'] }}</p>
 <p>Created {{ recipe['created'] }}</p>
 <p>Updated {{ recipe['updated'] }}</p>
 <p>Time {{ recipe['time'] }} minutes</p>
@@ -28,4 +29,8 @@
 </ol>
 
 <p>{% for tag in tags %}<span>{{ tag }}</span>{% endfor %}</p>
+{% if g.user and g.user['user_id'] == recipe['user_id'] %}
+<p><a href="{{ url_for('recipe.update', recipe_id=recipe['recipe_id']) }}">Update</a></p>
+<p><a href="{{ url_for('recipe.delete', recipe_id=recipe['recipe_id']) }}">Delete</a></p>
+{% endif %}
 {% endblock %}

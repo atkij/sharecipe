@@ -1,0 +1,261 @@
+:root {
+	--colour1: #01346b;
+	--colour2: #4a99ee;
+	--colour3: #0273eb;
+	--colour4: #2e4b6b;
+	--colour5: #025ab8;
+	--white: #ffffff;
+	--black: #000000;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html {
+	height: 100%;
+}
+
+body {
+	height: 100%;
+	padding: 0;
+	margin: 0;
+	font-family: serif;
+}
+
+.wrapper {
+	min-height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.error {
+	color: red;
+}
+
+header, footer {
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+header {
+	padding: 0 20px;
+}
+
+header a {
+	text-decoration: none;
+	color: black;
+}
+
+nav {
+	width: 100%;
+	background-color: var(--colour1);
+	position: sticky;
+	top: 0;
+}
+
+nav::after {
+	content: "";
+	clear: both;
+	display: table;
+}
+
+nav #menu-checkbox {
+	display: none;
+}
+
+nav label {
+	cursor: pointer;
+	background-color: var(--colour1);
+	color: white;
+	float: right;
+}
+
+nav label:hover {
+	background-color: var(--colour3);;
+}
+
+nav input#menu-checkbox:checked ~ label {
+	background-color: var(--colour5);
+}
+
+nav li.dropdown button {
+	display: none;
+}
+	
+nav ul {
+	max-height: 0;
+	background-color: var(--colour1);
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	width: 100%;
+	transition: 0.5s;
+}
+
+nav input#menu-checkbox:checked ~ ul {
+	max-height: 100vh;
+}
+
+nav a, nav label{
+	display: block;
+	text-align: center;
+	padding: 10px 12px;
+	color: white;
+	text-decoration: none;
+	font-size: 1em;
+	transition: 0.1s;
+}
+
+nav a:hover {
+	background-color: var(--colour3);
+}
+
+nav a:active {
+	background-color: var(--colour5);
+}
+
+nav button {
+	background-color: var(--colour1);
+	color: white;
+	border: none;
+	font-family: serif;
+	font-size: 1em;
+	cursor: pointer;
+	transition: 0.1s;
+}
+
+nav button:hover {
+	background-color: var(--colour3);
+}
+
+nav button:active {
+	background-color: var(--colour5);
+}
+
+main {
+	flex-grow: 1;
+	padding: 20px;
+}
+
+form span {
+	float: right;
+}
+
+form input {
+	width: 100%;
+	margin: 10px 0 30px 0;
+	padding: 8px;
+	border: 2px solid grey;
+	outline: none;
+	transition: 0.1s;
+}
+
+form input:hover {
+	border-color: var(--colour3);
+}
+
+form input:focus {
+	border-color: var(--colour5);
+}
+
+form textarea {
+	width: 100%;
+	margin: 10px 0 30px 0;
+	padding: 8px;
+	border: 2px solid grey;
+	resize: vertical;
+	outline: none;
+	transition: 0.1s;
+}
+
+form textarea:hover {
+	border-color: var(--colour3);
+}
+
+form textarea:focus {
+	border-color: var(--colour5);
+}
+
+form input[type="submit"] {
+	width: auto;
+	margin: 0;
+	padding: 10px;
+	float: right;
+	background-color: var(--colour1);
+	color: white;
+	border: none;
+	transition: 0.1s;
+}
+
+form input[type="submit"]:hover {
+	background-color: var(--colour3);
+}
+
+form input[type="submit"]:focus {
+	background-color: var(--colour5);
+}
+
+footer {
+	padding: 10px;
+	background-color: var(--colour4);
+	color: white;
+	text-align: center;
+}
+
+@media only screen and (min-width: 768px) {
+	/* for desktop */
+	nav {
+		position: sticky;
+		top: 0;
+	}
+
+	nav label {
+		display: none;
+	}
+
+	nav ul {
+		max-height: none;
+	}
+
+	nav li {
+		float: left;
+	}
+
+	nav li.right {
+		float: right;
+	}
+
+	nav li.dropdown {
+		display: inline-block;
+	}
+
+	nav li.dropdown button {
+		display: block;
+		margin: 0;
+		text-align: center;
+		padding: 10px 12px;
+	}
+
+	nav .dropdown-content {
+		display: none;
+		position: absolute;
+		right: 0;
+		background-color: var(--colour1);
+		z-index: 1;
+		transition: 0.1s;
+	}
+
+	nav li.dropdown button:focus ~ .dropdown-content {
+		display: block;
+	}
+
+	nav .dropdown-content:hover {
+		display: block;
+	}
+
+	nav .dropdown-content a {
+		text-align: right;
+	}
+}

@@ -3,25 +3,39 @@
 	<head>
 		{% block head %}
 		<title>{% block title %}{% endblock %} - My Website</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
 		{% endblock %}
 	</head>
 	<body>
+		<div class="wrapper">
 		<header>
 			{% block header %}
-			<h1>My Website</h1>
+			<h1><a href="{{ url_for('index') }}">My Website</a></h1>
 			{% endblock %}
 		</header>
 		<nav>
-			{% block nav %}
-			<li><a href="{{ url_for('index') }}">Home</a></li>
-			{% if g.user %}
-			<li><a href="{{ url_for('account.index') }}">My Account</a></li>
-			<li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
-			{% else %}
-			<li><a href="{{ url_for('auth.register') }}">Register</a></li>
-			<li><a href="{{ url_for('auth.login') }}">Log In</a></li>
-			{% endif %}
-			{% endblock %}
+			<input type="checkbox" id="menu-checkbox">
+			<label for="menu-checkbox">Menu</label>
+			<ul>
+				{% block nav %}
+				<li><a href="{{ url_for('index') }}">Home</a></li>
+				<li><a href="{{ url_for('recipe.index') }}">Recipes</a></li>
+				{% if g.user %}
+				<li class="dropdown right">
+					<button>Account</button>
+					<div class="dropdown-content">
+						<a href="{{ url_for('user.index', user_id=g.user['user_id']) }}">Profile</a>
+						<a href="{{ url_for('account.index') }}">Settings</a>
+						<a href="{{ url_for('auth.logout') }}">Log Out</a>
+					</div>
+				</li>
+				{% else %}
+				<li class="right"><a href="{{ url_for('auth.register') }}">Register</a></li>
+				<li class="right"><a href="{{ url_for('auth.login') }}">Login</a></li>
+				{% endif %}
+				{% endblock %}
+			</ul>
 		</nav>
 		<main>
 			{% block main %}
@@ -37,6 +51,7 @@
 			<p>Copyright &copy; 2023 Joel Atkinson</p>
 			{% endblock %}
 		</footer>
+		</div>
 	</body>
 </html>
 

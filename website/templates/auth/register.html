@@ -3,10 +3,16 @@
 
 {% block content %}
 <form method="post">
+	<p class="error">{{ error['form'] }}</p>
+
 	<label for="username">Username</label>
-	<input name="username" id="username" required>
+	<span class="error">{{ error['username'] }}</span>
+	<input name="username" id="username" maxlength="36" required>
+
 	<label for="password">Password</label>
-	<input type="password" name="password" id="password" required>
+	<span class="error">{{ error['password'] }}</span>
+	<input type="password" name="password" id="password" maxlength="256" required>
+
 	<input type="submit" value="Register">
 </form>
 {% endblock %}

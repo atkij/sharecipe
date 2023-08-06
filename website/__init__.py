@@ -1,6 +1,8 @@
 import os
 from flask import Flask, render_template, session, g
 
+from website.db import get_db
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -19,24 +21,16 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    @app.context_processor
-    def utility_processor():
-        def check_permission(available, required):
-            if available & required == required:
-                return True
-            else:
-                return False
-        return dict(check_permission=check_permission)
-    
     @app.before_request
     def load_user():
-        if session.get('user_id') is None:
+        user_id = session.get('user_id')
+
+        if user_id is None:
             g.user = None
         else:
-            g.user = {}
-            g.user['user_id'] = session.get('user_id')
-            g.user['username'] = session.get('username')
-            g.user['permissions'] = session.get('permissions')
+            g.user = get_db().execute(
+                    'SELECT user_id, username FROM user WHERE user_id = ?', (user_id,)
+                    ).fetchone()
 
     # register blueprints
     register_blueprints(app)

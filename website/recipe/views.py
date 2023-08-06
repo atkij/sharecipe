@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import abort, g, redirect, render_template, request, url_for
+from flask import abort, flash, g, redirect, render_template, request, url_for
 import re
 
 from website.db import get_db
@@ -13,9 +13,6 @@ def index():
 
 @bp.route('/<int:recipe_id>')
 def view(recipe_id):
-    if recipe_id is None:
-        abort(404)
-
     db = get_db()
 
     recipe = db.execute(
@@ -28,47 +25,140 @@ def view(recipe_id):
 
     ingredients = recipe['ingredients'].split('\n')
     method = [x.split('\n') for x in recipe['method'].split('\n\n')]
-    tags = recipe['tags'].split(',')
+    tags = (recipe['tags'] or '').split(',')
 
     return render_template('recipe/view.html', recipe=recipe, ingredients=ingredients, method=method, tags=tags)
 
 @bp.route('/create', methods=('GET', 'POST'))
-@login_required()
+@login_required
 def create():
+    error = {}
+
     if request.method == 'POST':
-        # collect form data
-        title = str(request.form['title']).strip()
-        ingredients = str(request.form['ingredients']).strip().replace('\r', '')
-        method = str(request.form['method']).strip().replace('\r', '')
-        time = str(request.form['time'])
-        difficulty = str(request.form['difficulty'])
-        servings = str(request.form['servings'])
-        tags = str(request.form['tags']).strip().lower()
-        
-        # process form data
-        tags = re.sub('[^a-z,]', '', tags)
-        
         # open database
         db = get_db()
-        error = None
+        
+        data = process(request.form)
+        error = validate(data, error)
 
-        # validate data
-        if not time.isnumeric() and int(time) > 0:
-            error = 'Time must be a valid number.'
-        elif not difficulty.isnumeric() and 0 < int(difficulty) < 6:
-            error = 'Difficulty must be a valid number.'
-        elif not servings.isnumeric() and int(servings) > 0:
-            error = 'Servings must be a valid number.'
+        if not error:
+            tags = None if not data['tags'] else re.sub('[^a-z,]', '', data['tags'].lower())
 
-        if error is None:
             res = db.execute(
-                    'INSERT INTO recipe (user_id, title, ingredients, method, time, difficulty, servings, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                    (g.user['user_id'], title, ingredients, method, time, difficulty, servings, tags,)
+                    'INSERT INTO recipe (user_id, title, description, ingredients, method, time, difficulty, servings, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    (g.user['user_id'], data['title'], data['description'], data['ingredients'], data['method'], data['time'], data['difficulty'], data['servings'], tags,)
                     )
             db.commit()
 
             return redirect(url_for('recipe.view', recipe_id=res.lastrowid))
+    return render_template('recipe/create.html', error=error)
 
-        flash(error)
+@bp.route('/<int:recipe_id>/update', methods=('GET', 'POST'))
+@login_required
+def update(recipe_id):
+    db = get_db()
+    error = {}
 
-    return render_template('recipe/create.html')
+    recipe = db.execute(
+            'SELECT * FROM recipe WHERE recipe_id = ?',
+            (recipe_id,)
+            ).fetchone()
+
+    if recipe is None:
+        abort(404)
+    elif g.user['user_id'] != recipe['user_id']:
+        abort(403)
+
+    if request.method == 'POST':
+        data = process(request.form)
+        error = validate(data, error)
+
+        if not error:
+            tags = None if not data['tags'] else re.sub('[^a-z,]', '', data['tags'].lower())
+
+            db.execute(
+                    'UPDATE recipe SET title = ?, description = ?, ingredients = ?, method = ?, time = ?, difficulty = ?, servings = ?, tags = ?, updated = datetime("now") WHERE recipe_id = ?',
+                    (data['title'], data['description'], data['ingredients'], data['method'], data['time'], data['difficulty'], data['servings'], tags, recipe_id,)
+                    )
+            db.commit()
+
+            return redirect(url_for('recipe.view', recipe_id=recipe_id))
+    return render_template('recipe/update.html', recipe=recipe, error=error)
+
+@bp.route('/<int:recipe_id>/delete')
+@login_required
+def delete(recipe_id):
+    db = get_db()
+
+    recipe = db.execute(
+            'SELECT * FROM recipe WHERE recipe_id = ?',
+            (recipe_id,)
+            ).fetchone()
+
+    if recipe is None:
+        abort(404)
+    elif g.user['user_id'] != recipe['user_id']:
+        abort(403)
+
+    db.execute(
+            'DELETE FROM recipe WHERE recipe_id = ?',
+            (recipe_id,)
+            )
+    db.commit()
+
+    return redirect(url_for('recipe.index'))
+
+# change empty fields to None and remove return codes
+def process(data):
+    data = {key: value.strip().replace('\r', '') for key, value in data.items()}
+    return data
+
+# validate data
+def validate(data, error):
+    if not data['title']:
+        error['title'] = 'Title is required.'
+    elif len(data['title'].strip()) > 50:
+        error['title'] = 'Title cannot be more than 50 characters.'
+    
+    if not data['description']:
+        pass
+    elif len(data['description'].strip()) > 200:
+        error['description'] = 'Description cannot be more than 400 characters.'
+    
+    if not data['ingredients']:
+        error['ingredients'] = 'Ingredients are required.'
+    elif len(data['ingredients']) > 200:
+        error['ingredients'] = 'Ingredients cannot be more than 1000 characters.'
+
+    if not data['method']:
+        error['method'] = 'Method is required.'
+    elif len(data['method']) > 4000:
+        error['method'] = 'Method cannot be more than 4000 characters.'
+    
+    if not data['time']:
+        pass
+    elif not data['time'].isnumeric():
+        error['time'] = 'Time must be a number.'
+    elif int(data['time']) <= 0:
+        error['time'] = 'Time must be greater than 0.'
+
+    if not data['difficulty']:
+        pass
+    elif not data['difficulty'].isnumeric():
+        error['difficulty'] = 'Difficulty must be a number.'
+    elif int(data['difficulty']) < 1 or int(data['difficulty']) > 5:
+        error['difficulty'] = 'Difficulty must be between 1 and 5.'
+
+    if not data['servings']:
+        pass
+    elif not data['servings'].isnumeric():
+        error['servings'] = 'Servings must be a number.'
+    elif int(data['servings']) <= 0:
+        error['servings'] = 'Servings must be greater than 0.'
+
+    if not data['tags']:
+        pass
+    elif len(data['tags'].strip()) > 100:
+        error['tags'] = 'Tags cannot be more than 100 characters.'
+
+    return error

@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import abort, g, redirect, render_template, url_for
 
 from website.db import get_db
+from website.util import login_required
 
 from . import user_blueprint
 
@@ -29,33 +30,33 @@ def index(user_id):
     return render_template('user/index.html', user=user, joined=joined, active=active, followers=followers[0], following=following[0], follows=follows)
 
 @user_blueprint.route('/<int:user_id>/follow')
+@login_required
 def follow(user_id):
-    if g.user:
-        db = get_db()
+    db = get_db()
 
-        try:
-            db.execute(
-                'INSERT INTO follower (user_id, follower_id) VALUES (?, ?)',
-                (user_id, g.user['user_id'],)
-                )
-            db.commit()
-        except db.IntegrityError:
-            pass
+    try:
+        db.execute(
+            'INSERT INTO follower (user_id, follower_id) VALUES (?, ?)',
+            (user_id, g.user['user_id'],)
+            )
+        db.commit()
+    except db.IntegrityError:
+        pass
 
     return redirect(url_for('user.index', user_id=user_id)) 
 
 @user_blueprint.route('/<int:user_id>/unfollow')
+@login_required
 def unfollow(user_id):
-    if g.user:
-        db = get_db()
+    db = get_db()
 
-        try:
-            db.execute(
-                'DELETE FROM follower WHERE user_id = ? AND follower_id = ?',
-                (user_id, g.user['user_id'],)
-                )
-            db.commit()
-        except db.IntegrityError:
-            pass
+    try:
+        db.execute(
+            'DELETE FROM follower WHERE user_id = ? AND follower_id = ?',
+            (user_id, g.user['user_id'],)
+            )
+        db.commit()
+    except db.IntegrityError:
+        pass
 
     return redirect(url_for('user.index', user_id=user_id))
