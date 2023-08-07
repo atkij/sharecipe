@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Search Recipes{% endblock %}
+
+{% block content %}
+<form class="search" method="get">
+	<input type="search" name="q" placeholder="Enter keywords" value="{{ request.args['q'] }}" maxlength="100" required>
+	<input type="submit" value="Search">
+</form>
+
+<div class="recipe-list">
+	{% if recipes %}
+	{% for recipe in recipes %}
+	<div class="recipe-card">
+		<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
+		<div class="recipe-info">
+			<span>Serves {{ recipe['servings'] }}</span>
+			<span>Time: {{ recipe['time'] }} mins</span>
+			<span>Difficulty: {{ recipe['difficulty'] }}/5</span>
+		</div>
+		<p>{{ recipe['description'] }}</p>
+	</div>
+	{% endfor %}
+	{% endif %}
+</div>
+{% endblock %}
