@@ -7,7 +7,7 @@
 
 	<label for="title">Title</label>
 	<span class="error">{{ error['title'] }}</span>
-	<input name="title" id="title" value="{{ request.form['title'] or recipe['title'] }}" maxlength="50" required>
+	<input name="title" id="title" value="{{ request.form['title'] or recipe['title'] }}" maxlength="100" required>
 
 	<label for="description">Description</label>
 	<span class="error">{{ error['description'] }}</span>
@@ -27,7 +27,7 @@
 
 	<label for="ingredients">Ingredients</label>
 	<span class="error">{{ error['ingredients'] }}</span>
-	<textarea name="ingredients" id="ingredients" rows="10" maxlength="1000" required>{{ request.form['ingredients'] or recipe['ingredients'] }}</textarea>
+	<textarea name="ingredients" id="ingredients" rows="20" maxlength="1000" required>{{ request.form['ingredients'] or recipe['ingredients'] }}</textarea>
 
 	<label for="method">Method</label>
 	<span class="error">{{ error['method'] }}</span>

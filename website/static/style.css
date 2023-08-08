@@ -21,6 +21,7 @@ body {
 	padding: 0;
 	margin: 0;
 	font-family: serif;
+	font-size: 1rem;
 }
 
 .wrapper {
@@ -31,6 +32,10 @@ body {
 
 .error {
 	color: red;
+}
+
+.text {
+	white-space: pre-wrap;
 }
 
 header, footer {
@@ -152,6 +157,8 @@ form input {
 	margin: 1rem 0 2rem 0;
 	padding: 0.5rem;
 	border: 2px solid grey;
+	font-family: inherit;
+	font-size: inherit;
 	outline: none;
 	transition: 0.1s;
 }
@@ -170,6 +177,7 @@ form textarea {
 	padding: 0.5rem;
 	border: 2px solid grey;
 	font-family: inherit;
+	font-size: inherit;
 	resize: vertical;
 	outline: none;
 	transition: 0.1s;

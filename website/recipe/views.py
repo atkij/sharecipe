@@ -138,8 +138,8 @@ def process(data):
 def validate(data, error):
     if not data['title']:
         error['title'] = 'Title is required.'
-    elif len(data['title'].strip()) > 50:
-        error['title'] = 'Title cannot be more than 50 characters.'
+    elif len(data['title'].strip()) > 100:
+        error['title'] = 'Title cannot be more than 100 characters.'
     
     if not data['description']:
         pass
@@ -148,7 +148,7 @@ def validate(data, error):
     
     if not data['ingredients']:
         error['ingredients'] = 'Ingredients are required.'
-    elif len(data['ingredients']) > 200:
+    elif len(data['ingredients']) > 1000:
         error['ingredients'] = 'Ingredients cannot be more than 1000 characters.'
 
     if not data['method']:

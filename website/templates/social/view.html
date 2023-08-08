@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}{{ post['title'] }}{% endblock %}
+
+{% block content %}
+<p>By <a href="{{ url_for('user.index', user_id=post['user_id']) }}">{{ post['username'] }}</a></p>
+<p>Created {{ post['created'] }}</p>
+{% if post['updated'] %}<p>Updated {{ post['updated'] }}</p>{% endif %}
+<div class="text">{{ post['body'] }}</div>
+
+{% if g.user and g.user['user_d'] == post['user_id'] %}
+<p><a href="{{ url_for('social.update', post_id=post['post_id']) }}">Update</a></p>
+<p><a href="{{ url_for('social.delete', post_id=post['post_id']) }}">Delete</a></p>
+{% endif %}
+{% endblock %}

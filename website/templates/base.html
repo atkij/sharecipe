@@ -21,6 +21,7 @@
 				{% block nav %}
 				<li><a href="{{ url_for('index') }}">Home</a></li>
 				<li><a href="{{ url_for('recipe.index') }}">Recipes</a></li>
+				<li><a href="{{ url_for('social.index') }}">Social</a></li>
 				{% if g.user %}
 				<li class="dropdown right">
 					<button>Account</button>

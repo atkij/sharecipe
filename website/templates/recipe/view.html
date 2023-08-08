@@ -5,7 +5,7 @@
 <p>By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></p>
 <p>{{ recipe['description'] }}</p>
 <p>Created {{ recipe['created'] }}</p>
-<p>Updated {{ recipe['updated'] }}</p>
+{% if recipe['updated'] %}<p>Updated {{ recipe['updated'] }}</p>{% endif %}
 <p>Time {{ recipe['time'] }} minutes</p>
 <p>Difficulty {{ recipe['difficulty'] }}/5</p>
 <p>Serves {{ recipe['servings'] }}</p>
@@ -22,7 +22,7 @@
 	{% for instruction in method %}
 	<li>
 		{% for paragraph in instruction %}
-		<p>{{ paragraph }}</p>
+		<p class="text">{{ paragraph }}</p>
 		{% endfor %}
 	</li>
 	{% endfor %}
