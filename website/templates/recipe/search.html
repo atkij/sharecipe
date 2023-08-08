@@ -12,14 +12,17 @@
 	{% for recipe in recipes %}
 	<div class="recipe-card">
 		<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
+		<p>By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></p>
 		<div class="recipe-info">
-			<span>Serves {{ recipe['servings'] }}</span>
+			<span>Serves: {{ recipe['servings'] }}</span>
 			<span>Time: {{ recipe['time'] }} mins</span>
 			<span>Difficulty: {{ recipe['difficulty'] }}/5</span>
 		</div>
 		<p>{{ recipe['description'] }}</p>
 	</div>
 	{% endfor %}
+	{% else %}
+	<p>No recipes available.</p>
 	{% endif %}
 </div>
 {% endblock %}

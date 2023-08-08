@@ -9,7 +9,21 @@ from . import recipe_blueprint as bp
 
 @bp.route('/')
 def index():
-    return render_template('recipe/index.html')
+    db = get_db()
+    latest_recipes = None
+    user_recipes = None
+
+    latest_recipes = db.execute(
+            'SELECT recipe.*, user.username FROM recipe INNER JOIN user ON recipe.user_id = user.user_id ORDER BY created DESC LIMIT 10'
+            ).fetchall()
+
+    if g.user:
+        user_recipes = db.execute(
+            'SELECT recipe.* FROM recipe WHERE recipe.user_id = ? ORDER BY created DESC LIMIT 10',
+            (g.user['user_id'],)
+            ).fetchall()
+    
+    return render_template('recipe/index.html', latest_recipes=latest_recipes, user_recipes=user_recipes)
 
 @bp.route('/<int:recipe_id>')
 def view(recipe_id):
@@ -39,7 +53,7 @@ def search():
         keywords = list(map(lambda w: '%'+w+'%', keywords))
 
         db = get_db()
-        query = 'SELECT recipe.*, (' + ' + '.join(['(tags LIKE ?)']*len(keywords)) + ') AS best_match FROM recipe ORDER BY best_match DESC LIMIT 10'
+        query = 'SELECT recipe.*, user.username, (' + ' + '.join(['(tags LIKE ?)']*len(keywords)) + ') AS best_match FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE best_match > 0 ORDER BY best_match DESC LIMIT 24'
         print(query)
         print(keywords)
 
@@ -49,6 +63,10 @@ def search():
         flash('Queries are restricted to 100 characters maximum.')
 
     return render_template('recipe/search.html', recipes=recipes)
+
+@bp.route('/latest')
+def latest():
+    return ''
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required

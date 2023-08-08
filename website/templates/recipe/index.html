@@ -2,15 +2,59 @@
 {% block title %}Recipes{% endblock %}
 
 {% block content %}
+{% if g.user %}
+<p><a href="{{ url_for('recipe.create') }}">Create Recipe</a></p>
+{% endif %}
+
 <section>
-	<h2>Search Recipes</h2>
 	<form class="search" action="{{ url_for('recipe.search') }}" method="get">
-		<input type="search" name="q" placeholder="Enter keywords" value="{{ request.args['q'] }}" maxlength="100" required>
+		<input type="search" name="q" placeholder="Search recipes" value="{{ request.args['q'] }}" maxlength="100" required>
 		<input type="submit" value="Search">
 	</form>
 </section>
 
-{% if g.user %}
-<p><a href="{{ url_for('recipe.create') }}">Create Recipe</a></p>
+{% if latest_recipes %}
+<section class="scroll-box">
+	<h3>Latest Recipes</h3>
+	<div class="scroll">
+		{% for recipe in latest_recipes %}
+		<div class="scroll-card recipe-card">
+			<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
+			<p>By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></p>
+			<div class="recipe-info">
+				<span>Serves: {{ recipe['servings'] }}</span>
+				<span>Time: {{ recipe['time'] }} mins</span>
+				<span>Difficulty: {{ recipe['difficulty'] }}/5</span>
+			</div>
+			<p>{{ recipe['description'] }}</p>
+		</div>
+		{% endfor %}
+		<div class="scroll-card">
+		<h3><a href="{{ url_for('recipe.latest') }}">View more...</a></h3>
+		</div>
+	</div>
+</section>
+{% endif %}
+
+{% if user_recipes %}
+<section class="scroll-box">
+	<h3>My Recipes</h3>
+	<div class="scroll">
+		{% for recipe in user_recipes %}
+		<div class="scroll-card recipe-card">
+			<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
+			<div class="recipe-info">
+				<span>Serves: {{ recipe['servings'] }}</span>
+				<span>Time: {{ recipe['time'] }} mins</span>
+				<span>Difficulty: {{ recipe['difficulty'] }}/5</span>
+			</div>
+			<p>{{ recipe['description'] }}</p>
+		</div>
+		{% endfor %}
+		<div class="scroll-card">
+		<h3><a href="{{ url_for('recipe.latest') }}">View more...</a></h3>
+		</div>
+	</div>
+</section>
 {% endif %}
 {% endblock %}
