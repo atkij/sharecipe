@@ -1,0 +1,14 @@
+{% macro recipe_card(recipe) -%}
+<div class="recipe-card">
+		<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
+		<p class="recipe-author">By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></p>
+		<div class="recipe-info">
+			<span>Serves: {{ recipe['servings'] }}</span>
+			<span>Time: {{ recipe['time'] }} mins</span>
+			<span>Difficulty: {{ recipe['difficulty'] }}/3</span>
+			{% if recipe['vegetarian'] %}<span class="vegetarian"></span>{% endif %}
+		</div>
+		<p class="recipe-description">{{ recipe['description'] }}</p>
+	</div>
+
+{%- endmacro %}

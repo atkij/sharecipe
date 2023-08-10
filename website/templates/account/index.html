@@ -4,6 +4,7 @@
 {% block content %}
 <h3>{{ user['username'] }}</h3>
 <p><a href="{{ url_for('user.index', user_id=g.user['user_id']) }}">View public profile</a></p>
+<p><a href="{{ url_for('recipe.latest', user_id=g.user['user_id']) }}">View recipes</a></p>
 <p>Joined {{ joined }}</p>
 <p>Last login at {{ last_login }}</p>
 <p>{{ followers }} followers</p>

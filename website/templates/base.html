@@ -21,7 +21,7 @@
 				{% block nav %}
 				<li><a href="{{ url_for('index') }}">Home</a></li>
 				<li><a href="{{ url_for('recipe.index') }}">Recipes</a></li>
-				<li><a href="{{ url_for('social.index') }}">Social</a></li>
+				{#<li><a href="{{ url_for('social.index') }}">Social</a></li>#}
 				{% if g.user %}
 				<li class="dropdown right">
 					<button>Account</button>
@@ -44,6 +44,7 @@
 			{% for message in get_flashed_messages() %}
 			<p class="error">{{ message }}</p>
 			{% endfor %}
+			{% block action %}{% endblock %}
 			<section>{% block content %}{% endblock %}</section>
 			{% endblock %}
 		</main>

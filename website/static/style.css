@@ -149,13 +149,34 @@ body {
 	opacity: 1;
 }
 
+[class|="button"] {
+	display: inline-block;
+	padding: 8px 8px;
+	background-color: var(--colour1);
+	color: white;
+	text-decoration: none;
+	transition: 0.1s;
+}
+
+[class|="button"]:hover {
+	background-color: var(--colour3);
+}
+
+[class|="button"]:active {
+	background-color: var(--colour5);
+}
+
+.button-right {
+	float: right;
+}
+
 header, footer {
 	flex-grow: 0;
 	flex-shrink: 0;
 }
 
 header {
-	padding: 0 2rem;
+	padding: 0 20px;
 }
 
 header a {
@@ -168,6 +189,7 @@ nav {
 	background-color: var(--colour1);
 	position: sticky;
 	top: 0;
+	z-index: 1;
 }
 
 nav::after {
@@ -217,10 +239,10 @@ nav input#menu-checkbox:checked ~ ul {
 nav a, nav label{
 	display: block;
 	text-align: center;
-	padding: 0.6rem 0.8rem;
+	padding: 8px 10px;
 	color: white;
 	text-decoration: none;
-	font-size: 1em;
+	font-size: 1rem;
 	transition: 0.1s;
 }
 
@@ -256,7 +278,22 @@ nav button:focus {
 
 main {
 	flex-grow: 1;
-	padding: 2rem;
+	padding: 20px;
+}
+
+main > h1 {
+	display: inline-block;
+	margin: 0;
+}
+
+main > section {
+	margin: 20px 0;
+}
+
+form .horizontal {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 20px;
 }
 
 form span {
@@ -265,13 +302,51 @@ form span {
 
 form input {
 	width: 100%;
-	margin: 1rem 0 2rem 0;
-	padding: 0.5rem;
+	margin: 10px 0 20px 0;
+	display: block;
+	padding: 8px;
 	border: 2px solid grey;
 	font-family: inherit;
 	font-size: inherit;
 	outline: none;
 	transition: 0.1s;
+	white-space: 
+}
+
+form input[type="number"] {
+	width: 100px;
+	margin: 10px 5px 20px 5px;
+}
+
+form input[type="checkbox"] {
+	appearance: none;
+	margin: 10px 5px 20px 5px;
+	box-sizing: content-box;
+	font-size: 18px;
+	height: 1em;
+	width: 1em;
+}
+
+form input[type="checkbox"]:checked {
+	border-color: var(--colour5);
+}
+
+form input[type="checkbox"]::after {
+	content: "";
+	position: relative;
+	display: inline-block;
+	left: 2px;
+	bottom: 3px;
+	width: 0.5em;
+	height: 1em;
+	border: solid var(--colour5);
+	border-width: 0 4px 4px 0;
+	transform: rotate(0) scale(0);
+	transition: transform 0.05s;
+}
+
+form input[type="checkbox"]:checked::after {
+	transform: rotate(45deg) scale(1);
 }
 
 form input:hover {
@@ -284,8 +359,8 @@ form input:focus {
 
 form textarea {
 	width: 100%;
-	margin: 1rem 0 2rem 0;
-	padding: 0.5rem;
+	margin: 10px 0 20px 0;
+	padding: 8px;
 	border: 2px solid grey;
 	font-family: inherit;
 	font-size: inherit;
@@ -305,7 +380,7 @@ form textarea:focus {
 form input[type="submit"] {
 	width: auto;
 	margin: 0;
-	padding: 0.6rem;
+	padding: 10px;
 	float: right;
 	background-color: var(--colour1);
 	color: white;
@@ -323,7 +398,7 @@ form input[type="submit"]:focus {
 
 form.search {
 	display: flex;
-	gap: 1rem;
+	gap: 10px;
 }
 
 form.search input[type="search"] {
@@ -336,36 +411,79 @@ form.search input[type="submit"] {
 	margin: auto;
 }
 
-div.recipe-list {
-	display: flex;
-	flex-flow: row wrap;
-	margin: 1rem 0;
-	gap: 1rem;
+.pagination {
+	display: inline-block;
+	position: relative;
+	margin: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	text-align: center;
 }
 
-div.recipe-card {
+.pagination a {
+	color: black;
+	float: left;
+	padding: 8px 16px;
+	text-decoration: none;
+	transition: 0.1s;
+}
+
+.pagination a.active {
+	background-color: var(--colour3);
+	color: white;
+}
+
+.pagination a:hover:not(.active) {
+	background-color: var(--lightgrey);
+}
+
+.pagination a:active:not(.active) {
+	background-color: var(--grey);
+}
+
+.recipe-list {
+	display: flex;
+	flex-flow: row wrap;
+	margin: 0;
+	gap: 20px;
+}
+
+.recipe-card {
 	padding: 10px 20px;
-	width: 21em;
+	width: 24em;
 	border: 1px solid var(--grey);
 	border-radius: 5px;
 	text-align: left;
+	white-space: nowrap;
 }
 
-div.recipe-card * {
+.recipe-card > * {
 	margin: 2px 0 0 0;
 	padding: 6px 0 8px 0;
+	position: relative;
+	overflow: hidden;
 }
 
-div.recipe-card div {
+.recipe-card > p::after, h2::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 10%;
+	height: 100%;
+	background-image: linear-gradient(to left, white, transparent);
+}
+
+.recipe-card .recipe-info {
 	border-top: 1px solid var(--grey);
 	border-bottom: 1px solid var(--grey);
 }
 
-div.recipe-card div span {
+.recipe-info span {
 	margin-right: 10px;
 }
 
-div.recipe-flex-card {
+.recipe-list .recipe-card {
 	flex: 0 1 100%;
 }
 
@@ -395,7 +513,21 @@ div.recipe-flex-card {
 	margin: 0;
 	margin-right: 20px;
 	vertical-align: middle;
+}
+
+.vegetarian::before {
+	content: "v";
+	font-size: 90%;
+	color: white;
+	background-color: green;
+	vertical-align: middle;
 	text-align: center;
+	line-height: 1;
+	display: inline-block;
+	width: 1em;	
+	height: 1em;
+	border-radius: 1em;
+	transform: translateY(-0.1em);
 }
 
 footer {
@@ -405,7 +537,7 @@ footer {
 	text-align: center;
 }
 
-@media only screen and (min-width: 50rem) {
+@media only screen and (min-width: 800px) {
 	/* small */
 	nav {
 		position: sticky;
@@ -436,7 +568,7 @@ footer {
 		display: block;
 		margin: 0;
 		text-align: center;
-		padding: 0.6rem 0.8rem;
+		padding: 8px 10px;
 	}
 
 	nav .dropdown-content {
@@ -460,22 +592,21 @@ footer {
 		text-align: right;
 	}
 	
-	div.recipe-flex-card {
-		flex-basis: calc(50% - 0.5rem);
+	.recipe-list .recipe-card {
+		flex-basis: calc(50% - 10px);
 	}
 }
 
-@media only screen and (min-width: 75rem) {
+@media only screen and (min-width: 1200px) {
 	/* medium */
-	div.recipe-flex-card {
-		flex-basis: calc((100% / 3) - (2rem / 3));
+	.recipe-list .recipe-card {
+		flex-basis: calc((100% / 3) - (40px / 3));
 	}
 }
 
-@media only screen and (min-width: 100rem) {
+@media only screen and (min-width: 1600px) {
 	/* large */
-	div.recipe-flex-card {
-		flex-basis: calc(25% - 0.75rem);
-	}
+	.recipe-list .recipe-card {
+		flex-basis: calc(25% - 15px);
 	}
 }

@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import abort, flash, g, redirect, render_template, request, url_for
+from math import ceil
 import re
 
 from website.db import get_db
@@ -19,9 +20,9 @@ def index():
 
     if g.user:
         user_recipes = db.execute(
-            'SELECT recipe.* FROM recipe WHERE recipe.user_id = ? ORDER BY created DESC LIMIT 10',
-            (g.user['user_id'],)
-            ).fetchall()
+                'SELECT recipe.*, user.username FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE recipe.user_id = ? ORDER BY created DESC LIMIT 10',
+                (g.user['user_id'],)
+                ).fetchall()
     
     return render_template('recipe/index.html', latest_recipes=latest_recipes, user_recipes=user_recipes)
 
@@ -45,28 +46,78 @@ def view(recipe_id):
 
 @bp.route('/search')
 def search():
-    search = request.args.get('q', '').strip()
+    params = request.args.copy()
+    params.pop('page', None)
+    params.pop('q', None)
+
+    search = request.args.get('q', '').strip().lower()
+    vegetarian = request.args.get('vegetarian') == 'vegetarian' or 'veg' in search
+    user_id = request.args.get('user_id')
+
     recipes = None
+    count = int()
+    page = int()
+    pages = int()
+    limit = 60
+    
+    if len(search) > 100:
+        flash('Queries are restricted to 100 characters maximum.')
 
     if search:
         keywords = search[:100].split(' ')
         keywords = list(map(lambda w: '%'+w+'%', keywords))
 
         db = get_db()
-        query = 'SELECT recipe.*, user.username, (' + ' + '.join(['(tags LIKE ?)']*len(keywords)) + ') AS best_match FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE best_match > 0 ORDER BY best_match DESC LIMIT 24'
-        print(query)
-        print(keywords)
+        
+        search = ' + '.join(['(tags LIKE ?) + (title LIKE ?) + (description LIKE ?)'] * len(keywords))
+        query = f'SELECT recipe.*, user.username, ({search}) AS best_match FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE best_match > 0 AND (vegetarian = ? OR vegetarian = ?) AND (recipe.user_id = ? OR ?) ORDER BY best_match DESC LIMIT ? OFFSET ?'
 
-        recipes = db.execute(query, keywords).fetchall()
+        keywords = [i for i in keywords for _ in (0, 1, 2)]
 
-    if len(search) > 100:
-        flash('Queries are restricted to 100 characters maximum.')
+        recipes = db.execute(query, (*keywords, vegetarian, vegetarian + 1, user_id, not user_id, limit, ((page - 1) * limit))).fetchall()
+        
+        count = int(db.execute(
+                f'SELECT COUNT(*) FROM recipe WHERE ({search}) > 0 AND (recipe.user_id = ? OR ?)',
+                (*keywords, user_id, not user_id)
+                ).fetchone()[0])
 
-    return render_template('recipe/search.html', recipes=recipes)
+        page = int(request.args.get('page')) if request.args.get('page', '').isnumeric() else 1
+        pages = ceil(count / limit)
+
+    return render_template('recipe/search.html', params=params, recipes=recipes, page=page, pages=pages, limit=limit, count=count)
 
 @bp.route('/latest')
 def latest():
-    return ''
+    db = get_db()
+
+    params = request.args.copy()
+    params.pop('page', None)
+    
+    vegetarian = request.args.get('vegetarian') == 'vegetarian'
+    user_id = request.args.get('user_id')
+    username = None
+
+    count = int(db.execute(
+            'SELECT COUNT(*) FROM recipe WHERE recipe.user_id = ? OR ?',
+            (user_id, not user_id)
+            ).fetchone()[0])
+    
+    page = int(request.args.get('page')) if request.args.get('page', '').isnumeric() else 1
+    limit = 60
+    pages = ceil(count / limit)
+
+    recipes = db.execute(
+            'SELECT recipe.*, user.username FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE (vegetarian = ? OR vegetarian = ?) AND recipe.user_id = ? OR ? ORDER BY created DESC LIMIT ? OFFSET ?',
+            (vegetarian, vegetarian + 1, user_id, not user_id, limit, ((page - 1) * limit))
+            ).fetchall()
+
+    if user_id:
+        username = db.execute(
+                'SELECT user.username FROM user WHERE user.user_id = ?',
+                (user_id,)
+                ).fetchone()[0]
+    
+    return render_template('recipe/latest.html', params=params, recipes=recipes, username=username, page=page, pages=pages, limit=limit, count=count)
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
@@ -81,11 +132,9 @@ def create():
         error = validate(data, error)
 
         if not error:
-            tags = None if not data['tags'] else re.sub('[^a-z,]', '', data['tags'].lower())
-
             res = db.execute(
-                    'INSERT INTO recipe (user_id, title, description, ingredients, method, time, difficulty, servings, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    (g.user['user_id'], data['title'], data['description'], data['ingredients'], data['method'], data['time'], data['difficulty'], data['servings'], tags,)
+                    'INSERT INTO recipe (user_id, title, description, ingredients, method, time, difficulty, servings, vegetarian, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    (g.user['user_id'], data['title'], data['description'], data['ingredients'], data['method'], data['time'], data['difficulty'], data['servings'], data['vegetarian'], data['tags'])
                     )
             db.commit()
 
@@ -113,11 +162,9 @@ def update(recipe_id):
         error = validate(data, error)
 
         if not error:
-            tags = None if not data['tags'] else re.sub('[^a-z,]', '', data['tags'].lower())
-
             db.execute(
-                    'UPDATE recipe SET title = ?, description = ?, ingredients = ?, method = ?, time = ?, difficulty = ?, servings = ?, tags = ?, updated = datetime("now") WHERE recipe_id = ?',
-                    (data['title'], data['description'], data['ingredients'], data['method'], data['time'], data['difficulty'], data['servings'], tags, recipe_id,)
+                    'UPDATE recipe SET title = ?, description = ?, ingredients = ?, method = ?, time = ?, difficulty = ?, servings = ?, vegetarian = ?, tags = ?, updated = datetime("now") WHERE recipe_id = ?',
+                    (data['title'], data['description'], data['ingredients'], data['method'], data['time'], data['difficulty'], data['servings'], data['vegetarian'], data['tags'], recipe_id)
                     )
             db.commit()
 
@@ -148,20 +195,25 @@ def delete(recipe_id):
     return redirect(url_for('recipe.index'))
 
 # change empty fields to None and remove return codes
-def process(data):
-    data = {key: value.strip().replace('\r', '') for key, value in data.items()}
+def process(original):
+    data = dict.fromkeys(('title', 'description', 'ingredients', 'method', 'time', 'difficulty', 'servings', 'vegetarian', 'tags', 'method', 'ingredients'), '')
+    data.update({key: value.strip().replace('\r', '') for key, value in original.items()})
+
+    data['tags'] = None if not data['tags'] else re.sub('[^a-z,]', '', data['tags'].lower())
+    data['vegetarian'] = True if data['vegetarian'] else False
+
     return data
 
 # validate data
 def validate(data, error):
     if not data['title']:
         error['title'] = 'Title is required.'
-    elif len(data['title'].strip()) > 100:
+    elif len(data['title']) > 100:
         error['title'] = 'Title cannot be more than 100 characters.'
     
     if not data['description']:
         pass
-    elif len(data['description'].strip()) > 200:
+    elif len(data['description']) > 200:
         error['description'] = 'Description cannot be more than 400 characters.'
     
     if not data['ingredients']:
@@ -185,8 +237,8 @@ def validate(data, error):
         pass
     elif not data['difficulty'].isnumeric():
         error['difficulty'] = 'Difficulty must be a number.'
-    elif int(data['difficulty']) < 1 or int(data['difficulty']) > 5:
-        error['difficulty'] = 'Difficulty must be between 1 and 5.'
+    elif int(data['difficulty']) < 1 or int(data['difficulty']) > 3:
+        error['difficulty'] = 'Difficulty must be between 1 and 3.'
 
     if not data['servings']:
         pass
@@ -194,10 +246,10 @@ def validate(data, error):
         error['servings'] = 'Servings must be a number.'
     elif int(data['servings']) <= 0:
         error['servings'] = 'Servings must be greater than 0.'
-
+    
     if not data['tags']:
         pass
-    elif len(data['tags'].strip()) > 100:
+    elif len(data['tags']) > 100:
         error['tags'] = 'Tags cannot be more than 100 characters.'
 
     return error

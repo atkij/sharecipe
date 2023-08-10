@@ -5,14 +5,20 @@
 <form method="post">
 	<p class="error">{{ error['form'] }}</p>
 
-	<label for="username">Username</label>
-	<span class="error">{{ error['username'] }}</span>
-	<input name="username" id="username" maxlength="36" required>
+	<div>
+		<label for="username">Username</label>
+		<span class="error">{{ error['username'] }}</span>
+		<input name="username" id="username" maxlength="36" required>
+	</div>
 
-	<label for="password">Password</label>
-	<span class="error">{{ error['password'] }}</span>
-	<input type="password" name="password" id="password" maxlength="256" required>
+	<div>
+		<label for="password">Password</label>
+		<span class="error">{{ error['password'] }}</span>
+		<input type="password" name="password" id="password" maxlength="256" required>
+	</div>
 
-	<input type="submit" value="Register">
+	<div>
+		<input type="submit" value="Register">
+	</div>
 </form>
 {% endblock %}

@@ -2,13 +2,22 @@
 {% block title %}{{ recipe['title'] }}{% endblock %}
 
 {% block content %}
-<p>By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></p>
+<div class="recipe-info">
+<span>By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></span>
+<span>Created {{ recipe['created']|strftime('%d/%m/%Y') }}</span>
+{% if recipe['updated'] %}<span>Updated {{ recipe['updated']|strftime('%d/%m/%Y') }}</span>{% endif %}
+</div>
+
+<br>
+
+<div class="recipe-info">
+<span>Time: {{ recipe['time'] }} minutes</span>
+<span>Serves: {{ recipe['servings'] }}</span>
+<span>Difficulty: {{ recipe['difficulty'] }}/3</span>
+{% if recipe['vegetarian'] %}<span class="vegetarian"></span>{% endif %}
+</div>
+
 <p>{{ recipe['description'] }}</p>
-<p>Created {{ recipe['created'] }}</p>
-{% if recipe['updated'] %}<p>Updated {{ recipe['updated'] }}</p>{% endif %}
-<p>Time {{ recipe['time'] }} minutes</p>
-<p>Difficulty {{ recipe['difficulty'] }}/5</p>
-<p>Serves {{ recipe['servings'] }}</p>
 
 <h3>Ingredients</h3>
 <ul>

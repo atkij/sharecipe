@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template, session, g
+from datetime import datetime
 
 from website.db import get_db
 
@@ -31,6 +32,10 @@ def create_app(test_config=None):
             g.user = get_db().execute(
                     'SELECT user_id, username FROM user WHERE user_id = ?', (user_id,)
                     ).fetchone()
+
+    @app.template_filter('strftime')
+    def format_time_filter(s, f):
+        return datetime.fromisoformat(s).strftime(f)
 
     # register blueprints
     register_blueprints(app)

@@ -1,10 +1,14 @@
 {% extends 'base.html' %}
+{% from 'macros.html' import recipe_card %}
 {% block title %}Recipes{% endblock %}
 
-{% block content %}
+{% block action %}
 {% if g.user %}
-<p><a href="{{ url_for('recipe.create') }}">Create Recipe</a></p>
+<a class="button-right" href="{{ url_for('recipe.create') }}">Create Recipe</a>
 {% endif %}
+{% endblock %}
+
+{% block content %}
 
 <section>
 	<form class="search" action="{{ url_for('recipe.search') }}" method="get">
@@ -18,16 +22,7 @@
 	<h3>Latest Recipes</h3>
 	<div class="scroll">
 		{% for recipe in latest_recipes %}
-		<div class="scroll-card recipe-card">
-			<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
-			<p>By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></p>
-			<div class="recipe-info">
-				<span>Serves: {{ recipe['servings'] }}</span>
-				<span>Time: {{ recipe['time'] }} mins</span>
-				<span>Difficulty: {{ recipe['difficulty'] }}/5</span>
-			</div>
-			<p>{{ recipe['description'] }}</p>
-		</div>
+		<div class="scroll-card">{{ recipe_card(recipe) }}</div>
 		{% endfor %}
 		<div class="scroll-card">
 		<h3><a href="{{ url_for('recipe.latest') }}">View more...</a></h3>
@@ -41,18 +36,10 @@
 	<h3>My Recipes</h3>
 	<div class="scroll">
 		{% for recipe in user_recipes %}
-		<div class="scroll-card recipe-card">
-			<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
-			<div class="recipe-info">
-				<span>Serves: {{ recipe['servings'] }}</span>
-				<span>Time: {{ recipe['time'] }} mins</span>
-				<span>Difficulty: {{ recipe['difficulty'] }}/5</span>
-			</div>
-			<p>{{ recipe['description'] }}</p>
-		</div>
+		<div class="scroll-card">{{ recipe_card(recipe) }}</div>
 		{% endfor %}
 		<div class="scroll-card">
-		<h3><a href="{{ url_for('recipe.latest') }}">View more...</a></h3>
+		<h3><a href="{{ url_for('recipe.latest', user_id=g.user['user_id']) }}">View more...</a></h3>
 		</div>
 	</div>
 </section>
