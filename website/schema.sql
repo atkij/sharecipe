@@ -7,6 +7,9 @@ CREATE TABLE user (
 	user_id INTEGER NOT NULL PRIMARY KEY,
 	username TEXT NOT NULL UNIQUE CHECK (LENGTH(username) >= 3 AND LENGTH(username) <= 36),
 	password TEXT NOT NULL CHECK (LENGTH(password) >= 8 AND LENGTH(password) <= 256),
+	forename TEXT CHECK (LENGTH(forename) <= 36),
+	surname TEXT CHECK (LENGTH(surname) <= 36),
+	bio TEXT CHECK (LENGTH(bio) <= 400),
 	created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	last_login TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -46,3 +49,12 @@ CREATE TABLE post (
 	updated TEXT,
 	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
+/*
+CHANGES
+
+ - post table (new)
+ - firstname in user (new)
+ - lastname in user (new)
+ - bio in user (new)
+*/

@@ -1,3 +1,27 @@
+{% macro alert(message, class='error') -%}
+<div class="alert {{ class }}">
+	<input type="checkbox" class="close">
+	<div class="content"><span>{{ message }}</span></div>
+</div>
+{%- endmacro %}
+
+{% macro help(message, direction="right") -%}
+<div class="help"><span class="{{ direction }}">{{ message }}</span></div>
+{%- endmacro %}
+
+{% macro field(name, label, help, error) -%}
+<div>
+	{{ caller(name) }}
+	<label for="{{ name }}">{{ label }}</label>
+	<div class="help"><span class="right">{{ help }}</span></div>
+	<span class="error">{{ error[name] }}</span>
+</div>
+{%- endmacro %}
+
+{% macro profile_pic(user_id, size=None) -%}
+<img class="profile-pic {{ size }}" src="{{ profile_pic_uri(user_id) }}">
+{%- endmacro %}
+
 {% macro recipe_card(recipe) -%}
 <div class="recipe-card">
 		<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
@@ -11,4 +35,48 @@
 		<p class="recipe-description">{{ recipe['description'] }}</p>
 	</div>
 
+{%- endmacro %}
+
+{% macro recipe_scroll(recipes, name, filters) -%}
+<div class="scroll-box">
+	<h3>{{ name }}</h3>
+	<div class="scroll">
+		{% for recipe in recipes %}
+		<div class="scroll-card">{{ recipe_card(recipe) }}</div>
+		{% endfor %}
+		<div class="scroll-card">
+			<h3><a href="{{ url_for('recipe.latest', **filters) }}">View more...</a></h3>
+		</div>
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% macro tabs(id) -%}
+<div class="tab-view">
+	{{ caller(id) }}
+</div>
+{%- endmacro %}
+
+{% macro tab(name, id, class='', default=False) -%}
+<input type="radio" name="{{ id }}" class="tab-button {{ class }}" value="{{ name }}" {{ 'checked' if default }}>
+<div class="tab-content">{{ caller() }}</div>
+{%- endmacro %}
+
+{% macro tab_action(name, action, class='') -%}
+<a class="tab-button-right {{ class }}" href="{{ action }}">{{ name }}</a>
+{%- endmacro %}
+
+{% macro modal(name) -%}
+<input type="checkbox" name="{{ name }}" id="{{ name }}" class="hidden">
+<div class="modal">
+	<div class="modal-content">
+		<label class="close" for="{{ name }}">&times;</label>
+		{{ caller() }}
+	</div>
+</div>
+{%- endmacro %}
+
+{% macro modal_button(name, label) -%}
+<label class="button" for="{{ name }}">{{ label }}</label>
 {%- endmacro %}

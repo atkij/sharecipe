@@ -6,19 +6,40 @@
 	<p class="error">{{ error['form'] }}</p>
 
 	<div>
-		<label for="username">Username</label>
-		<span class="error">{{ error['username'] }}</span>
 		<input name="username" id="username" maxlength="36" required>
+		<label for="username">Username</label>
+		<div class="help"><span class="right">Enter a unique username to identify your account.</span></div>
+		<span class="error">{{ error['username'] }}</span>
+	</div>
+	
+	<div>
+		<input name="forename" id="forename" maxlength="36">
+		<label for="forename">Forename</label>
+		<div class="help"><span class="right">This is what we'll call you.</span></div>
+		<span class="error">{{ error['forename'] }}</span>
+	</div>
+	
+	<div>
+		<input name="surname" id="surname" maxlength="36">
+		<label for="surname">Surname</label>
+		<div class="help"><span class="right">This is what we'll call you.</span></div>
+		<span class="error">{{ error['surname'] }}</span>
 	</div>
 
 	<div>
-		<label for="password">Password</label>
-		<span class="error">{{ error['password'] }}</span>
 		<input type="password" name="password" id="password" maxlength="256" required>
+		<label for="password">Password</label>
+		<div class="help"><span class="right">Choose a strong and secure password to protect your account.</span></div>
+		<span class="error">{{ error['password'] }}</span>
 	</div>
 
 	<div>
-		<input type="submit" value="Register">
+		<input type="password" name="verify-password" id="verify-password" maxlength="256" required>
+		<label for="verify-password">Verify password</label>
+		<div class="help"><span class="right">Enter your password again to double check it.</span></div>
+		<span class="error">{{ error['verify-password'] }}</span>
 	</div>
+
+	<input type="submit" value="Register">
 </form>
 {% endblock %}

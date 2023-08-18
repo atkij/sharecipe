@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, session, g
+from flask import Flask, render_template, send_from_directory, session, url_for, g
 from datetime import datetime
 
 from website.db import get_db
@@ -10,6 +10,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
             SECRET_KEY='dev',
             DATABASE=os.path.join(app.instance_path, 'website.db'),
+            UPLOAD_FOLDER=os.path.join(app.instance_path, 'uploads'),
             )
 
     if test_config is None:
@@ -19,23 +20,13 @@ def create_app(test_config=None):
 
     try:
         os.makedirs(app.instance_path)
+        os.makedirs(app.config['UPLOAD_FOLDER'])
+        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'profile'))
     except OSError:
         pass
-
-    @app.before_request
-    def load_user():
-        user_id = session.get('user_id')
-
-        if user_id is None:
-            g.user = None
-        else:
-            g.user = get_db().execute(
-                    'SELECT user_id, username FROM user WHERE user_id = ?', (user_id,)
-                    ).fetchone()
-
-    @app.template_filter('strftime')
-    def format_time_filter(s, f):
-        return datetime.fromisoformat(s).strftime(f)
+    
+    # register utilities
+    register_utils(app)
 
     # register blueprints
     register_blueprints(app)
@@ -51,7 +42,7 @@ def create_app(test_config=None):
 
     # register error handlers
     register_error_handlers(app)
-
+    
     return app
 
 def register_blueprints(app):
@@ -70,6 +61,42 @@ def register_blueprints(app):
 def initialize_extensions(app):
     from website import db
     db.init_app(app)
+
+def register_utils(app):
+    @app.before_request
+    def load_user():
+        user_id = session.get('user_id')
+
+        if user_id is None:
+            g.user = None
+        else:
+            g.user = get_db().execute(
+                    'SELECT user.* FROM user WHERE user.user_id = ?', (user_id,)
+                    ).fetchone()
+
+    @app.route('/uploads/<path:filename>')
+    def upload(filename):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+    @app.template_filter('strftime')
+    def format_time_filter(s, f):
+        return datetime.fromisoformat(s).strftime(f)
+
+    @app.template_test('path')
+    def path_exists(path):
+        return os.path.exists(path)
+
+    @app.template_global('profile_pic_uri')
+    def profile_pic_filename(user_id):
+        filename = os.path.join('profile', str(user_id) + '.jpg')
+        if os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], filename)):
+            return url_for('upload', filename=filename)
+        else:
+            return url_for('static', filename='profile.svg')
+
+    @app.template_global('path')
+    def join_path(*filenames):
+        return os.path.join(*filenames)
 
 def register_error_handlers(app):
     @app.errorhandler(400)

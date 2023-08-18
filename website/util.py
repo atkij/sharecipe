@@ -1,8 +1,10 @@
 import functools
 import hashlib
+import imghdr
 import os
+import time
 
-from flask import abort, g, redirect, url_for
+from flask import abort, current_app, g, redirect, url_for
 
 def _hash_internal(password, salt, n=16384, r=8, p=1):
     maxmem = 132 * n * r * p
@@ -33,3 +35,11 @@ def login_required(view):
             return redirect(url_for('auth.login'))
         return view(*args, **kwargs)
     return wrapped_view
+
+def validate_image(stream):
+    header = stream.read(512)
+    stream.seek(0)
+    return imghdr.what(None, header) is not None
+
+def generate_filename():
+    return hashlib.md5(str(time.time()) + '_' + os.urandom(16)).hexdigest()

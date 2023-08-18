@@ -12,9 +12,12 @@ def register():
     if request.method == 'POST':
         username = request.form['username'].strip()
         password = request.form['password'].strip()
+        verify_password = request.form['verify-password'].strip()
+        forename = request.form['forename'].strip()
+        surname = request.form['surname'].strip()
+
         db = get_db()
         
-        print(len(username))
         if not username:
             error['username'] = 'Username is required.'
         elif len(username) < 3 or len(username) > 36:
@@ -25,11 +28,22 @@ def register():
         elif len(password) < 8 or len(password) > 256:
             error['password'] = 'Password must be between 8 and 256 characters.'
 
+        if not verify_password:
+            error['verify-password'] = 'Enter your password again.'
+        elif verify_password != password:
+            error['verify-password'] = 'Passwords must match.'
+
+        if len(forename) > 36:
+            error['forename'] = 'Forename must not be greater than 36 characters.'
+
+        if len(surname) > 36:
+            error['surname'] = 'Surname must not be greater than 36 characters.'
+
         if not error:
             try:
                 db.execute(
-                        'INSERT INTO user (username, password, last_login) VALUES (?, ?, datetime("now"))',
-                        (username, generate_password_hash(password))
+                        'INSERT INTO user (username, password, forename, surname, last_login) VALUES (?, ?, ?, ?, datetime("now"))',
+                        (username, generate_password_hash(password), forename, surname)
                         )
                 db.commit()
             except db.IntegrityError:

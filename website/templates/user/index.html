@@ -1,17 +1,44 @@
 {% extends 'base.html' %}
-{% block title %}{{ user['username'] }}{% endblock %}
+{% from 'macros.html' import profile_pic, recipe_scroll, tab, tabs, tab_action %}
+{% block title %}{{ user['forename'] }} {{  user['surname'] }}{% endblock %}
+
+{% block heading %}
+<div class="profile-pic-left">{{ profile_pic(user['user_id']) }}</div>
+<h1>{{ user['forename'] }} {{ user['surname'] }}</h1>
+<p class="info-horizontal"><span>{{ user['username'] }}</span>&bull;<span>Joined {{ joined }}</span>&bull;<span>Active {% if active > 0 %}{{ active }} days ago{% else %}today{% endif %}</span></p>
+{% endblock %}
 
 {% block content %}
-<p>Joined {{ joined }}.</p>
-<p>Active {{ active }} days ago.</p>
-<p>Follows {{ following }} people.</p>
-<p>Has {{ followers }} followers.</p>
+<p>{{ user['bio']|default('', true) }}</p>
+
+{% if recipes %}
+{{ recipe_scroll(recipes, 'Recipes', {'user_id': user['user_id']}) }}
+{% endif %}
+
+{% call(id) tabs('tabs') %}
+
+{% call tab('Following (%s)' % following|length, id, default=True) %}
+{% for u in following %}
+<div class="user-link">
+	{{ profile_pic(u['user_id']) }}
+	<a href="{{ url_for('user.index', user_id=u['user_id']) }}"><span>{{ u['forename'] }} {{ u['surname'] }}</span></a>
+</div>
+{% endfor %}
+{% endcall %}
+
+{% call tab('Followers (%s)' % followers|length, id) %}
+{% for u in followers %}
+<div class="user-link">
+		{{ profile_pic(u['user_id']) }}
+	<a href="{{ url_for('user.index', user_id=u['user_id']) }}"><span>{{ u['forename'] }} {{ u['surname'] }}</span></a>
+</div>
+{% endfor %}
+{% endcall %}
+
 {% if g.user and g.user['user_id'] != user['user_id'] %}
-{% if follows %}
-<a href="{{ url_for('user.unfollow', user_id=user['user_id']) }}">Unfollow</a>
-{% else %}
-<a href="{{ url_for('user.follow', user_id=user['user_id']) }}">Follow</a>
+{{ tab_action('Unfollow', url_for('user.unfollow', user_id=user['user_id'])) if follows else tab_action('Follow', url_for('user.follow', user_id=user['user_id'])) }}
 {% endif %}
-{% endif %}
-<p><a href="{{ url_for('recipe.latest', user_id=user['user_id']) }}">View recipes</a></p>
+
+{% endcall %}
+
 {% endblock %}

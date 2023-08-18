@@ -63,13 +63,11 @@
 
 	<div>
 		<label for="tags">Tags</label>
-		<div class="help"><span class="right">Enter keywords for your recipe which users can search for.</span></div>
+		<div class="help"><span class="right">Enter comma seperated keywords for your recipe which users can search for.</span></div>
 		<span class="error">{{ error['tags'] }}</span>
 		<input name="tags" id="tags" value="{{ request.form['tags'] or recipe['tags'] }}" maxlength="100">
 	</div>
 
-	<div>
-		<input type="submit" value="Update Recipe">
-	</div>
+	<input type="submit" value="Update Recipe">
 </form>
 {% endblock %}

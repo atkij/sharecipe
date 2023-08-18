@@ -6,19 +6,19 @@
 	<p class="error">{{ error['form'] }}</p>
 
 	<div>
-		<label for="username">Username</label>
-		<span class="error">{{ error['username'] }}</span>
 		<input name="username" id="username" maxlength="36" required>
+		<label for="username">Username</label>
+		<div class="help"><span class="right">Enter your username.</span></div>
+		<span class="error">{{ error['username'] }}</span>
 	</div>
 
 	<div>
-		<label for="password">Password</label>
-		<span class="error">{{ error['password'] }}</span>
 		<input type="password" name="password" id="password" maxlength="256" required>
+		<label for="password">Password</label>
+		<div class="help"><span class="right">Enter your password.</span></div>
+		<span class="error">{{ error['password'] }}</span>
 	</div>
 
-	<div>
-		<input type="submit" value="Log In">
-	</div>
+	<input type="submit" value="Log In">
 </form>
 {% endblock %}

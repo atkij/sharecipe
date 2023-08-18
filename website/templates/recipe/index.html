@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import recipe_card %}
+{% from 'macros.html' import recipe_card, recipe_scroll %}
 {% block title %}Recipes{% endblock %}
 
-{% block action %}
+{% block heading %}
+{{ super() }}
 {% if g.user %}
 <a class="button-right" href="{{ url_for('recipe.create') }}">Create Recipe</a>
 {% endif %}
@@ -18,30 +19,10 @@
 </section>
 
 {% if latest_recipes %}
-<section class="scroll-box">
-	<h3>Latest Recipes</h3>
-	<div class="scroll">
-		{% for recipe in latest_recipes %}
-		<div class="scroll-card">{{ recipe_card(recipe) }}</div>
-		{% endfor %}
-		<div class="scroll-card">
-		<h3><a href="{{ url_for('recipe.latest') }}">View more...</a></h3>
-		</div>
-	</div>
-</section>
+{{ recipe_scroll(latest_recipes, 'Latest Recipes', {}) }}
 {% endif %}
 
 {% if user_recipes %}
-<section class="scroll-box">
-	<h3>My Recipes</h3>
-	<div class="scroll">
-		{% for recipe in user_recipes %}
-		<div class="scroll-card">{{ recipe_card(recipe) }}</div>
-		{% endfor %}
-		<div class="scroll-card">
-		<h3><a href="{{ url_for('recipe.latest', user_id=g.user['user_id']) }}">View more...</a></h3>
-		</div>
-	</div>
-</section>
+{{ recipe_scroll(user_recipes, 'My Recipes', {'user_id': g.user['user_id']}) }}
 {% endif %}
 {% endblock %}
