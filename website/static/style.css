@@ -6,7 +6,7 @@
 	--colour5: #025ab8;
 	--success: #66ff99;
 	--info: #66c2ff;
-	--warning: #ffff66;
+	--warning: #ffa366;
 	--error: #ff6666;
 	--white: #ffffff;
 	--lightgrey: #f2f2f2;
@@ -46,19 +46,19 @@ body {
 }
 
 .success {
-	color: var(--success);
+	color: var(--success) !important;
 }
 
 .info {
-	color: var(--info);
+	color: var(--info) !important;
 }
 
 .warning {
-	color: var(--warning);
+	color: var(--warning) !important;
 }
 
 .error {
-	color: var(--error);
+	color: var(--error) !important;
 }
 
 .hidden {
@@ -213,6 +213,10 @@ body {
 	float: right;
 	margin: 0;
 	padding: 14px 20px;
+	color: var(--dark);
+	font-size: 28px;
+	font-weight: bold;
+	cursor: pointer;
 }
 
 .alert .close::before {
@@ -221,6 +225,14 @@ body {
 
 .alert .close:checked {
 	display: none;
+}
+
+.alert .close:hover {
+	color: var(--dark-hover);
+}
+
+.alert .close:active {
+	color: var(--dark-active);
 }
 
 .close:checked + .content {
@@ -235,7 +247,7 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 	content: " (Optional)";
 }
 
-[class|="button"] {
+.button {
 	appearance: none;
 	display: inline-block;
 	padding: 8px 8px;
@@ -243,24 +255,54 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 	font-size: inherit;
 	background-color: var(--colour1);
 	color: white;
+	border: none;
 	text-decoration: none;
 	cursor: pointer;
 	transition: 0.1s;
 }
 
-[class|="button"]::before {
+.button.light {
+	background-color: var(--light);
+	color: var(--black);
+}
+
+.button.round {
+	box-sizing: content-box;
+	border-radius: 50%;
+	text-align: center;
+	height: calc(1.5em);
+	width: calc(1.5em);
+}
+
+.button::before {
 	content: attr(value);
 }
 
-[class|="button"]:hover {
+.button.close::before {
+	content: "\00D7";
+	font-size: 28px;
+	font-weight: bold;
+	position: relative;
+	bottom: 15%;
+}
+
+.button:hover {
 	background-color: var(--colour3);
 }
 
-[class|="button"]:active {
+.button.light:hover {
+	background-color: var(--light-hover);
+}
+
+.button:active, .button:focus {
 	background-color: var(--colour5);
 }
 
-.button-right {
+.button.light:active, .button.light:focus {
+	background-color: var(--light-active);
+}
+
+.button.right {
 	float: right;
 }
 
@@ -311,7 +353,7 @@ nav input#menu-checkbox:checked ~ label {
 	background-color: var(--colour5);
 }
 
-nav li.dropdown button {
+nav li.nav-dropdown button {
 	display: none;
 }
 	
@@ -390,8 +432,13 @@ form > div {
 	flex-wrap: wrap;
 }
 
-form .error {
+form div.error {
 	margin-left: auto;
+}
+
+form div.error span::after {
+	content: "\a";
+	white-space: pre;
 }
 
 form input:not(.button) {
@@ -710,7 +757,6 @@ form.search input[type="submit"] {
 
 
 .modal {
-	display: none;
 	position: fixed;
 	z-index: 1;
 	left: 0;
@@ -721,29 +767,22 @@ form.search input[type="submit"] {
 	background-color: rgba(0, 0, 0, 0.4);
 }
 
+.modal.hidden {
+	display: none;
+}
+
 .modal .modal-content {
 	background-color: var(--white);;
 	margin: 30vh auto;
 	padding: 20px;
 	width: 90%;
 	max-width: 50em;
+	border-radius: 5px;
 	transform: translateY(-50%);
 }
 
-.close {
-	color: var(--dark);
-	float: right;
-	font-size: 28px;
-	font-weight: bold;
-	cursor: pointer;
-}
-
-.close:hover {
-	color: var(--dark-hover);
-}
-
-.close:active {
-	color: var(--dark-active);
+.modal .modal-content .modal-title {
+	margin-top: 8px;
 }
 
 input[type="checkbox"]:checked + .modal {
@@ -819,6 +858,53 @@ input[type="checkbox"]:checked + .modal {
 	gap: 0 10px;
 }
 
+.tags span {
+	padding: 4px 12px;
+	margin-right: 5px;
+	border-radius: 12px;
+	background-color: var(--lightgrey);
+}
+
+.dropdown {
+	position: relative;
+	display: inline-block;
+}
+
+.dropdown.right {
+	float: right;
+}
+
+.dropdown .dropdown-button {
+	cursor: pointer;
+	font-weight: 900;
+}
+
+.dropdown .dropdown-content {
+	display: none;
+	position: absolute;
+	background-color: var(--white);
+	border: 1px solid var(--grey);
+	border-radius: 5px;
+	overflow: hidden;
+	min-width: 160px;
+	margin-top: 5px;
+	z-index: 1;
+}
+
+.dropdown.right .dropdown-content {
+	right: 0;
+}
+
+.dropdown .dropdown-content .button {
+	color: var(--black);
+	padding: 12px 16px;
+	display: block;
+}
+
+.dropdown .dropdown-button:focus ~ .dropdown-content, .dropdown .dropdown-content:hover {
+	display: block;
+}
+
 footer {
 	padding: 10px;
 	background-color: var(--colour4);
@@ -849,18 +935,18 @@ footer {
 		float: right;
 	}
 
-	nav li.dropdown {
+	nav li.nav-dropdown {
 		display: inline-block;
 	}
 
-	nav li.dropdown button {
+	nav li.nav-dropdown button {
 		display: block;
 		margin: 0;
 		text-align: center;
 		padding: 8px 10px;
 	}
 
-	nav .dropdown-content {
+	nav .nav-dropdown .dropdown-content {
 		display: none;
 		position: absolute;
 		right: 0;
@@ -869,15 +955,15 @@ footer {
 		transition: 0.1s;
 	}
 
-	nav li.dropdown button:focus ~ .dropdown-content {
+	nav li.nav-dropdown button:focus ~ .dropdown-content {
 		display: block;
 	}
 
-	nav .dropdown-content:hover {
+	nav .nav-dropdown .dropdown-content:hover {
 		display: block;
 	}
 
-	nav .dropdown-content a {
+	nav .nav-dropdown .dropdown-content a {
 		text-align: right;
 	}
 	

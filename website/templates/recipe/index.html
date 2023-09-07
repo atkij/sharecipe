@@ -5,7 +5,7 @@
 {% block heading %}
 {{ super() }}
 {% if g.user %}
-<a class="button-right" href="{{ url_for('recipe.create') }}">Create Recipe</a>
+<a class="button right" href="{{ url_for('recipe.create') }}">Create Recipe</a>
 {% endif %}
 {% endblock %}
 

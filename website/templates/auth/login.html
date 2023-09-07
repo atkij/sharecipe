@@ -1,24 +1,25 @@
 {% extends 'base.html' %}
+{% from 'macros.html' import render_form %}
 {% block title %}Log In{% endblock %}
 
 {% block content %}
-<form method="post">
-	<p class="error">{{ error['form'] }}</p>
-
+{#<form method="post">
+	{{ form.csrf_token }}
 	<div>
-		<input name="username" id="username" maxlength="36" required>
-		<label for="username">Username</label>
-		<div class="help"><span class="right">Enter your username.</span></div>
-		<span class="error">{{ error['username'] }}</span>
+		{{ form.username()|safe }}
+		{{ form.username.label|safe }}
+		<div class="help"><span class="right">{{ form.username.description }}</span></div>
+		<div class="error">{% for error in form.username.errors %}<span class="error">{{ error }}</span>{% endfor %}</div>
 	</div>
 
 	<div>
-		<input type="password" name="password" id="password" maxlength="256" required>
-		<label for="password">Password</label>
-		<div class="help"><span class="right">Enter your password.</span></div>
-		<span class="error">{{ error['password'] }}</span>
+		{{ form.password()|safe }}
+		{{ form.password.label|safe }}
+		<div class="help"><span class="right">{{ form.password.description }}</span></div>
+		{% for error in form.password.errors %}<span class="error">{{ error }}</span>{% endfor %}
 	</div>
 
 	<input type="submit" value="Log In">
-</form>
+</form>#}
+{{ render_form(form, "Log In") }}
 {% endblock %}

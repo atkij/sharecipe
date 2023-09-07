@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
+{% from 'macros.html' import render_form %}
 {% block title %}Register{% endblock %}
 
 {% block content %}
-<form method="post">
-	<p class="error">{{ error['form'] }}</p>
+{#<form method="post">
+	{{ form.csrf_token }}
 
 	<div>
-		<input name="username" id="username" maxlength="36" required>
-		<label for="username">Username</label>
-		<div class="help"><span class="right">Enter a unique username to identify your account.</span></div>
+		{{ form.username()|safe }}
+		{{ form.username.label|safe }}
+		<div class="help"><span class="right">{{ form.username.description }}</span></div>
 		<span class="error">{{ error['username'] }}</span>
 	</div>
 	
@@ -41,5 +42,6 @@
 	</div>
 
 	<input type="submit" value="Register">
-</form>
+</form>#}
+{{ render_form(form, 'Register') }}
 {% endblock %}

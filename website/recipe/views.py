@@ -1,9 +1,12 @@
 from datetime import datetime
-from flask import abort, flash, g, redirect, render_template, request, url_for
+from flask import abort, current_app, flash, g, redirect, render_template, request, url_for
 from math import ceil
+import os
 import re
+import uuid
 
 from website.db import get_db
+from website.forms import RecipeForm, PhotoForm, DeleteForm
 from website.util import login_required
 
 from . import recipe_blueprint as bp
@@ -28,6 +31,10 @@ def index():
 
 @bp.route('/<int:recipe_id>')
 def view(recipe_id):
+    upload_photo_form = PhotoForm()
+    delete_photo_form = DeleteForm()
+    delete_form = DeleteForm()
+
     db = get_db()
 
     recipe = db.execute(
@@ -38,11 +45,11 @@ def view(recipe_id):
     if recipe is None:
         abort(404)
 
-    ingredients = recipe['ingredients'].split('\n')
-    method = [x.split('\n') for x in recipe['method'].split('\n\n')]
-    tags = (recipe['tags'] or '').split(',')
+    ingredients = recipe['ingredients'].split('\r\n')
+    method = [x.split('\n') for x in recipe['method'].split('\r\n\r\n')]
+    tags = list(filter(None, (recipe['tags'] or '').split(',')))
 
-    return render_template('recipe/view.html', recipe=recipe, ingredients=ingredients, method=method, tags=tags)
+    return render_template('recipe/view.html', recipe=recipe, ingredients=ingredients, method=method, tags=tags, delete_form=delete_form, upload_photo_form=upload_photo_form, delete_photo_form=delete_photo_form)
 
 @bp.route('/search')
 def search():
@@ -122,30 +129,25 @@ def latest():
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
-    error = {}
+    form = RecipeForm(request.form)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and form.validate():
         # open database
         db = get_db()
         
-        data = process(request.form)
-        error = validate(data, error)
+        res = db.execute(
+                'INSERT INTO recipe (user_id, title, description, ingredients, method, time, difficulty, servings, vegetarian, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                (g.user['user_id'], form.title.data, form.description.data, form.ingredients.data, form.method.data, form.time.data, form.difficulty.data, form.servings.data, form.vegetarian.data, form.tags.data)
+                )
+        db.commit()
 
-        if not error:
-            res = db.execute(
-                    'INSERT INTO recipe (user_id, title, description, ingredients, method, time, difficulty, servings, vegetarian, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    (g.user['user_id'], data['title'], data['description'], data['ingredients'], data['method'], data['time'], data['difficulty'], data['servings'], data['vegetarian'], data['tags'])
-                    )
-            db.commit()
-
-            return redirect(url_for('recipe.view', recipe_id=res.lastrowid))
-    return render_template('recipe/create.html', error=error)
+        return redirect(url_for('recipe.view', recipe_id=res.lastrowid))
+    return render_template('recipe/create.html', form=form)
 
 @bp.route('/<int:recipe_id>/update', methods=('GET', 'POST'))
 @login_required
 def update(recipe_id):
     db = get_db()
-    error = {}
 
     recipe = db.execute(
             'SELECT * FROM recipe WHERE recipe_id = ?',
@@ -157,23 +159,23 @@ def update(recipe_id):
     elif g.user['user_id'] != recipe['user_id']:
         abort(403)
 
-    if request.method == 'POST':
-        data = process(request.form)
-        error = validate(data, error)
+    form = RecipeForm(request.form, data=recipe)
 
-        if not error:
-            db.execute(
-                    'UPDATE recipe SET title = ?, description = ?, ingredients = ?, method = ?, time = ?, difficulty = ?, servings = ?, vegetarian = ?, tags = ?, updated = datetime("now") WHERE recipe_id = ?',
-                    (data['title'], data['description'], data['ingredients'], data['method'], data['time'], data['difficulty'], data['servings'], data['vegetarian'], data['tags'], recipe_id)
-                    )
-            db.commit()
+    if request.method == 'POST' and form.validate():
+        print(form.method.data)
+        db.execute(
+                'UPDATE recipe SET title = ?, description = ?, ingredients = ?, method = ?, time = ?, difficulty = ?, servings = ?, vegetarian = ?, tags = ?, updated = datetime("now") WHERE recipe_id = ?',
+                (form.title.data, form.ingredients.data, form.ingredients.data, form.method.data, form.time.data, form.difficulty.data, form.servings.data, form.vegetarian.data, form.tags.data, recipe_id)
+                )
+        db.commit()
 
-            return redirect(url_for('recipe.view', recipe_id=recipe_id))
-    return render_template('recipe/update.html', recipe=recipe, error=error)
+        return redirect(url_for('recipe.view', recipe_id=recipe_id))
+    return render_template('recipe/update.html', form=form)
 
-@bp.route('/<int:recipe_id>/delete')
+@bp.route('/<int:recipe_id>/delete', methods=('GET', 'POST'))
 @login_required
 def delete(recipe_id):
+    form = DeleteForm()
     db = get_db()
 
     recipe = db.execute(
@@ -186,13 +188,89 @@ def delete(recipe_id):
     elif g.user['user_id'] != recipe['user_id']:
         abort(403)
 
-    db.execute(
-            'DELETE FROM recipe WHERE recipe_id = ?',
-            (recipe_id,)
-            )
-    db.commit()
+    if request.method == 'POST' and form.validate():
+        db.execute(
+                'DELETE FROM recipe WHERE recipe_id = ?',
+                (recipe_id,)
+                )
+        db.commit()
 
-    return redirect(url_for('recipe.index'))
+        flash('Recipe deleted successfully.', 'success')
+        return redirect(url_for('recipe.index'))
+    else:
+        flash('Unable to delete recipe.', 'error')
+        return redirect(url_for('recipe.view', recipe_id=recipe_id))
+
+@bp.route('/<int:recipe_id>/photo/upload', methods=('GET','POST'))
+@login_required
+def upload_photo(recipe_id):
+    form = PhotoForm()
+    db = get_db()
+
+    recipe = db.execute(
+            'SELECT * FROM recipe WHERE recipe_id = ?',
+            (recipe_id,)
+            ).fetchone()
+    
+    if recipe is None:
+        abort(404)
+    elif g.user['user_id'] != recipe['user_id']:
+        abort(403)
+
+    if request.method == 'POST' and form.validate_on_submit():
+        photo = form.photo.data
+        filename = str(uuid.uuid4()) + '.' + photo.filename.split('.')[-1]
+        photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], 'photos', filename))
+
+        db.execute(
+                'UPDATE recipe SET photo = ? WHERE recipe_id = ?',
+                (filename, recipe_id)
+                )
+        db.commit()
+
+        flash('Photo uploaded successfully.', 'success')
+    else:
+        if form.errors:
+            flash(next(iter(form.errors.values()))[0], 'error')
+        else:
+            flash('Unable to upload photo.', 'error')
+
+    return redirect(url_for('recipe.view', recipe_id=recipe_id))
+
+@bp.route('/<int:recipe_id>/photo/delete', methods=('GET', 'POST'))
+@login_required
+def delete_photo(recipe_id):
+    form = DeleteForm(request.form)
+    db = get_db()
+
+    recipe = db.execute(
+            'SELECT * FROM recipe WHERE recipe_id = ?',
+            (recipe_id,)
+            ).fetchone()
+
+    if recipe is None:
+        abort(404)
+    elif g.user['user_id'] != recipe['user_id']:
+        abort(403)
+
+    if request.method == 'POST' and form.validate():
+        filename = os.path.join(current_app.config['UPLOAD_FOLDER'], 'photos', recipe['photo'])
+        if os.path.exists(filename):
+            os.remove(filename)
+
+            db.execute(
+                    'UPDATE recipe SET photo = NULL WHERE recipe_id = ?',
+                    (recipe_id,)
+                    )
+            db.commit()
+
+            flash('Photo deleted successfull.', 'success')
+        else:
+            flash('No photo to delete.', 'error')
+    else:
+        flash('Unable to delete photo.', 'error')
+
+    return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
 # change empty fields to None and remove return codes
 def process(original):

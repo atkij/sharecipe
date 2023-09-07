@@ -42,4 +42,4 @@ def validate_image(stream):
     return imghdr.what(None, header) is not None
 
 def generate_filename():
-    return hashlib.md5(str(time.time()) + '_' + os.urandom(16)).hexdigest()
+    return hashlib.md5(os.urandom(16)).hexdigest()

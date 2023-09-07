@@ -27,6 +27,7 @@ CREATE TABLE recipe (
 	recipe_id INTEGER NOT NULL PRIMARY KEY,
 	user_id INTEGER NOT NULL,
 	title TEXT NOT NULL CHECK (LENGTH(title) <= 100),
+	photo TEXT,
 	description TEXT CHECK (LENGTH(description) <= 400),
 	ingredients TEXT NOT NULL CHECK (LENGTH(ingredients) <= 1000),
 	method TEXT NOT NULL CHECK (LENGTH(method) <= 4000),

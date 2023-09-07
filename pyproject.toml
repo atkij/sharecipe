@@ -5,7 +5,9 @@ description = "My useful website"
 readme = "README.md"
 dependencies = [
 	"flask",
+	"Flask-WTF",
 	"Pillow",
+	"WTForms",
 ]
 
 [project.optional-dependencies]

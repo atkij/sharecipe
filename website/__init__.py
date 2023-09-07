@@ -22,6 +22,7 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
         os.makedirs(app.config['UPLOAD_FOLDER'])
         os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'profile'))
+        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'photos'))
     except OSError:
         pass
     

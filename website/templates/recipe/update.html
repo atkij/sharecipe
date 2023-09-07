@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
+{% from 'macros.html' import render_form %}
 {% block title %}Update Recipe{% endblock %}
 
 {% block content %}
-<form method="post">
+{#<form method="post">
 	<p class="error">{{ error['form'] }}</p>
 
 	<div>
@@ -69,5 +70,6 @@
 	</div>
 
 	<input type="submit" value="Update Recipe">
-</form>
+</form>#}
+{{ render_form(form, 'Update Recipe') }}
 {% endblock %}

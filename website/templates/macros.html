@@ -9,6 +9,24 @@
 <div class="help"><span class="{{ direction }}">{{ message }}</span></div>
 {%- endmacro %}
 
+{% macro render_form(form, name, action='', upload=False) -%}
+<form method="post" action="{{ action }}" {{ 'enctype="multipart/form-data"'|safe if upload }}>
+	{% for field in form %}
+	{% if field.type in ['HiddenField', 'CSRFTokenField'] %}
+	{{ field()|safe }}
+	{% else %}
+	<div>
+		{{ field()|safe }}
+		{{ field.label|safe }}
+		<div class="help"><span class="right">{{ field.description }}</span></div>
+		<div class="error">{% for error in field.errors %}<span class="error">{{ error }}</span>{% endfor %}</div>
+	</div>
+	{% endif %}
+	{% endfor %}
+	<input type="submit" value="{{ name }}">
+</form>
+{%- endmacro %}
+
 {% macro field(name, label, help, error) -%}
 <div>
 	{{ caller(name) }}
@@ -67,16 +85,16 @@
 <a class="tab-button-right {{ class }}" href="{{ action }}">{{ name }}</a>
 {%- endmacro %}
 
-{% macro modal(name) -%}
-<input type="checkbox" name="{{ name }}" id="{{ name }}" class="hidden">
-<div class="modal">
+{% macro modal(name, title='') -%}
+<div class="modal hidden" id="{{ name }}">
 	<div class="modal-content">
-		<label class="close" for="{{ name }}">&times;</label>
+		<a class="modal-close button close right round light"></a>
+		<h1 class="modal-title">{{ title }}</h1>
 		{{ caller() }}
 	</div>
 </div>
 {%- endmacro %}
 
 {% macro modal_button(name, label) -%}
-<label class="button" for="{{ name }}">{{ label }}</label>
+<a class="modal-open button" data-modal="{{ name }}">{{ label }}</a>
 {%- endmacro %}
