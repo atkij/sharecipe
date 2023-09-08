@@ -4,12 +4,16 @@ An online recipe sharing website
 > **Note:**
 > There are no release yet, so to get a wheel: clone the repository; create virtual environment with `python3 -m venv venv`; activate and install dependencies; execute `python3 -m build` to get wheel in `dist` folder.
 
+## Requirements
+* python3
+* nginx
+
 ## Installation
 
 1. Create a folder named `sharecipe-deploy` in your home folder.
 2. Create a python virtual environment with `python3 -m venv venv` and activate with `. venv/bin/activate`.  Download latest wheel release to folder and install with `pip install sharecipe-x.x.x-py2.py3-none-any.whl`.
 3. Execute `flask --app sharecipe init-db` to initialise database.
-4. Create the following files on your system: `/etc/systemd/system/sharecipe.service`, `/etc/systemd/system/sharecipe.socket` and `/etc/nginx/sites-available/sharecipe`.
+4. Create the following files on your system: `/etc/systemd/system/sharecipe.service`, `/etc/systemd/system/sharecipe.socket` and `/etc/nginx/sites-available/sharecipe`.  If you are running a different version of python, ensure you change `python3.9` in the nginx config to your version.
     ```service
     [Unit]
     Description=sharecipe gunicorn daemon
