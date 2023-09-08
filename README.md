@@ -1,45 +1,79 @@
-My useful website
+# Sharecipe
+An online recipe sharing website
 
-PERMISSIONS
-All permissions are stored as a 64 bit integer.  Each permission for a section of the website consists of 2 bits.  The 2 bits correspond to read and write.  This means that 32 permissions can be stored for the whole website in one number.
+> **Note:**
+> There are no release yet, so to get a wheel: clone the repository; create virtual environment with `python3 -m venv venv`; activate and install dependencies; execute `python3 -m build` to get wheel in `dist` folder.
 
-FEDCBAzyxwvutsrqponmlkjihgfedcba
+## Installation
 
-0 a = whole website (read access means can log in) (write access means can change account details (username, password...))
-2 b = admin permissions
-4 c = minecraft (read is view status) (write is stop start server)
-
-GUNICORN SERVICE THING
-move these files to /etc/systemd/system/
-
-gunicorn.service:
-[Unit]
-Description=gunicorn daemon
-Requires=gunicorn.socket
-After=network.target
-
-[Service]
-Type=notify
-User=joel
-Group=joel
-RuntimeDirectory=gunicorn
-WorkingDirectory=/home/joel/website-deploy/venv
-ExecStart=/home/joel/website-deploy/venv gunicorn website.wsgi
-ExecReload=/bin/kill -s HUP $MAINPID
-KillMode=mixed
-TimeoutStopSec=5
-PrivateTmp=true
-
-[Install]
-WantedBy=multi-user.target
-
-gunicorn.socket:
-[Unit]
-Description=gunicorn socket
-
-[Socket]
-ListenStream=/run/gunicorn.sock
-SocketUser=www-data
-
-[Install]
-WantedBy=sockets.target
+1. Create a folder named `sharecipe-deploy` in your home folder.
+2. Create a python virtual environment with `python3 -m venv venv` and activate with `. venv/bin/activate`.  Download latest wheel release to folder and install with `pip install sharecipe-x.x.x-py2.py3-none-any.whl`.
+3. Execute `flask --app sharecipe init-db` to initialise database.
+4. Create the following files on your system: `/etc/systemd/system/sharecipe.service`, `/etc/systemd/system/sharecipe.socket` and `/etc/nginx/sites-available/sharecipe`.
+    ```service
+    [Unit]
+    Description=sharecipe gunicorn daemon
+    Requires=sharecipe.socket
+    After=network.target
+    
+    [Service]
+    Type=notify
+    User=<user>
+    Group=<user>
+    RuntimeDirectory=gunicorn
+    WorkingDirectory=/home/<user>/website-deploy/venv
+    ExecStart=/home/<user>/sharecipe-deploy/venv gunicorn sharecipe.wsgi
+    ExecReload=/bin/kill -s HUP $MAINPID
+    KillMode=mixed
+    TimeoutStopSec=5
+    PrivateTmp=true
+    
+    [Install]
+    WantedBy=multi-user.target
+    ```
+    ```service
+    [Unit]
+    Description=sharecipe socket
+    
+    [Socket]
+    ListenStream=/run/sharecipe.sock
+    SocketUser=www-data
+    
+    [Install]
+    WantedBy=sockets.target
+    ```
+    ```nginx
+    upstream app_server {
+    	server unix:/run/sharecipe.sock fail_timeout=0;
+    }
+    
+    server {
+    	listen 80;
+    	client_max_body_size 4G;
+    
+    	server_name _;
+    
+    	keepalive_timeout 5;
+    
+    	root /home/<user>/sharecipe-deploy/venv/lib/python3.9/site-packages/website/static;
+    
+    	location / {
+    		try_files $uri @proxy_to_app;
+    	}
+    
+    	location @proxy_to_app {
+    		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    		proxy_set_header X-Forwarded-Proto $scheme;
+    		proxy_set_header Host $http_host;
+    		proxy_redirect off;
+    		proxy_pass http://app_server;
+    	}
+    
+    	error_page 500 502 503 504 /500.html;
+    	location = /500.html {
+    		root /home/<user>/sharecipe-deploy/venv/lib/python3.9/site-packages/website/static;
+    	}
+    }
+    ```
+5. Enable the service with `systemctl enable --now sharecipe.service` and restart nginx with `systemctl restart nginx`.
+6. View website at [locahost](localhost).
