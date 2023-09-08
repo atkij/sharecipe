@@ -30,4 +30,17 @@
 	for (let i = 0; i < modals.length; i++) {
 		registerModal(modals[i]);
 	}
+
+	function resizeTextarea() {
+		this.style.height = 0;
+		this.style.height = this.scrollHeight + "px";
+	}
+
+	let textareas = document.getElementsByTagName("textarea");
+	for (let i = 0; i < textareas.length; i++) {
+		textareas[i].style.resize = "none";
+		textareas[i].style.height = textareas[i].scrollHeight + "px";
+		textareas[i].style.overflowY = "hidden";
+		textareas[i].addEventListener("input", resizeTextarea);
+	}
 })();

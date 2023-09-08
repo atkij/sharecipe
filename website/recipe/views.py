@@ -38,7 +38,7 @@ def view(recipe_id):
     db = get_db()
 
     recipe = db.execute(
-            'SELECT recipe.*, username FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE recipe_id = ?',
+            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE recipe_id = ?',
             (recipe_id,)
             ).fetchone()
 
@@ -165,7 +165,7 @@ def update(recipe_id):
         print(form.method.data)
         db.execute(
                 'UPDATE recipe SET title = ?, description = ?, ingredients = ?, method = ?, time = ?, difficulty = ?, servings = ?, vegetarian = ?, tags = ?, updated = datetime("now") WHERE recipe_id = ?',
-                (form.title.data, form.ingredients.data, form.ingredients.data, form.method.data, form.time.data, form.difficulty.data, form.servings.data, form.vegetarian.data, form.tags.data, recipe_id)
+                (form.title.data, form.description.data, form.ingredients.data, form.method.data, form.time.data, form.difficulty.data, form.servings.data, form.vegetarian.data, form.tags.data, recipe_id)
                 )
         db.commit()
 

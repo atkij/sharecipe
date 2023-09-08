@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import modal, render_form %}
+{% from 'macros.html' import modal, profile_pic, render_form %}
 {% block title %}{{ recipe['title'] }}{% endblock %}
 
 {% block heading %}
@@ -38,43 +38,53 @@
 
 {% endif %}
 
-{% if recipe['photo'] %}
-<img src="{{ url_for('upload', filename='photos/' + recipe['photo']) }}">
-{% endif %}
+<div class="recipe">
+<div class="recipe-details">
+	<div class="recipe-info">
+		{{ profile_pic(recipe['user_id']) }}
+		<a href="{{ url_for('user.index', user_id=recipe['user_id']) }}"><span>{% if recipe['forename'] or recipe['surname'] %}{{ recipe['forename']}} {{ recipe['surname'] }}{% else %}{{ recipe['username'] }}{% endif %}</span></a>
+	</div>
 
-<div class="recipe-info">
-<span>By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></span>
-<span>Created {{ recipe['created']|strftime('%d/%m/%Y') }}</span>
-{% if recipe['updated'] %}<span>Updated {{ recipe['updated']|strftime('%d/%m/%Y') }}</span>{% endif %}
+	{#<div class="recipe-info">
+	<span>Created {{ recipe['created']|strftime('%d/%m/%Y') }}</span>
+	{% if recipe['updated'] %}<span>Updated {{ recipe['updated']|strftime('%d/%m/%Y') }}</span>{% endif %}
+	</div>#}
+
+	<div class="recipe-info">
+	<span>Serves {{ recipe['servings'] }}</span>
+	<span>{{ recipe['time'] }} minutes</span>
+	<span>{% if recipe['difficulty'] == 1 %}Easy{% elif recipe['difficulty'] == 2 %}Medium{% else %}Hard{% endif %}</span>
+	{% if recipe['vegetarian'] %}<span class="vegetarian"></span>{% endif %}
+	</div>
+
+	{% if recipe['photo'] %}
+	<div class="image-container">
+		<img src="{{ url_for('upload', filename='photos/' + recipe['photo']) }}">
+	</div>
+	{% endif %}
+
+	<div class="recipe-info"><span>{{ recipe['description'] }}</span></div>
+	<div class="tags">{% for tag in tags %}<span>{{ tag }}</span>{% endfor %}</div>
 </div>
 
-<br>
-
-<div class="recipe-info">
-<span>Time: {{ recipe['time'] }} minutes</span>
-<span>Serves: {{ recipe['servings'] }}</span>
-<span>Difficulty: {{ recipe['difficulty'] }}/3</span>
-{% if recipe['vegetarian'] %}<span class="vegetarian"></span>{% endif %}
-</div>
-
-<p>{{ recipe['description'] }}</p>
-
-<h3>Ingredients</h3>
-<ul>
-	{% for ingredient in ingredients %}
-	<li><p>{{ ingredient }}</p></li>
-	{% endfor %}
-</ul>
-
-<h3>Method</h3>
-<ol>
-	{% for instruction in method %}
-	<li>
-		{% for paragraph in instruction %}
-		<p class="text">{{ paragraph }}</p>
+<div class="recipe-instructions">
+	<h2>Ingredients</h3>
+	<ul>
+		{% for ingredient in ingredients %}
+		<li><p>{{ ingredient }}</p></li>
 		{% endfor %}
-	</li>
-	{% endfor %}
-</ol>
-<p class="tags">{% for tag in tags %}<span>{{ tag }}</span>{% endfor %}</p>
+	</ul>
+
+	<h2>Method</h3>
+	<ol>
+		{% for instruction in method %}
+		<li>
+			{% for paragraph in instruction %}
+			<p class="text">{{ paragraph }}</p>
+			{% endfor %}
+		</li>
+		{% endfor %}
+	</ol>
+</div>
+</div>
 {% endblock %}

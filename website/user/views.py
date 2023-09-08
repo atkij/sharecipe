@@ -28,12 +28,12 @@ def index(user_id):
             follows = True
 
     followers = db.execute(
-            'SELECT user.user_id, user.forename, user.surname FROM follower INNER JOIN user ON follower.follower_id = user.user_id WHERE follower.user_id = ?',
+            'SELECT user.user_id, user.username, user.forename, user.surname FROM follower INNER JOIN user ON follower.follower_id = user.user_id WHERE follower.user_id = ?',
             (user_id,)
             ).fetchall()
 
     following = db.execute(
-            'SELECT user.user_id, user.forename, user.surname FROM follower INNER JOIN user ON follower.user_id = user.user_id WHERE follower.follower_id = ?',
+            'SELECT user.user_id, user.username, user.forename, user.surname FROM follower INNER JOIN user ON follower.user_id = user.user_id WHERE follower.follower_id = ?',
             (user_id,)
             ).fetchall()
 

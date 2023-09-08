@@ -39,6 +39,10 @@ body {
 	color: var(--black);
 }
 
+:is(h1, h2, h3, h4, h5, h6):first-child {
+	margin-top: 0;
+}
+
 .wrapper {
 	min-height: 100%;
 	display: flex;
@@ -312,7 +316,7 @@ header, footer {
 }
 
 header {
-	padding: 0 20px;
+	padding: 20px 20px 0 20px;
 }
 
 header a {
@@ -447,11 +451,11 @@ form input:not(.button) {
 	width: 100%;
 	margin: 10px 0 20px 0;
 	padding: 8px;
-	border: 2px solid var(--darkgrey);
+	border: 1px solid var(--darkgrey);
 	font-family: inherit;
 	font-size: inherit;
 	outline: none;
-	transition: 0.1s;
+	transition: border 0.1s;
 }
 
 form input[type="file"] {
@@ -502,12 +506,12 @@ form input[type="checkbox"]:not(.button)::after {
 	content: "";
 	position: relative;
 	display: inline-block;
-	left: 2px;
+	left: 3px;
 	bottom: 3px;
 	width: 0.5em;
 	height: 1em;
-	border: solid var(--colour5);
-	border-width: 0 4px 4px 0;
+	border: 1px solid var(--colour5);
+	border-width: 0 3px 3px 0;
 	transform: rotate(0) scale(0);
 	transition: transform 0.05s;
 }
@@ -529,12 +533,12 @@ form textarea {
 	width: 100%;
 	margin: 10px 0 20px 0;
 	padding: 8px;
-	border: 2px solid var(--darkgrey);
+	border: 1px solid var(--darkgrey);
 	font-family: inherit;
 	font-size: inherit;
 	resize: vertical;
 	outline: none;
-	transition: 0.1s;
+	transition: border 0.1s;
 }
 
 form textarea:hover {
@@ -549,7 +553,7 @@ form input[type="submit"] {
 	width: auto;
 	margin: 0;
 	margin-left: auto;
-	padding: 10px;
+	padding: 9px;
 	background-color: var(--colour1);
 	color: white;
 	border: none;
@@ -632,7 +636,7 @@ form.search input[type="submit"] {
 	overflow: hidden;
 }
 
-.recipe-card > p::after, h2::after {
+.recipe-card > p::after, .recipe-card > h2::after {
 	content: "";
 	position: absolute;
 	top: 0;
@@ -643,17 +647,47 @@ form.search input[type="submit"] {
 }
 
 .recipe-card .recipe-info {
-	display: flex;
 	border-top: 1px solid var(--darkgrey);
 	border-bottom: 1px solid var(--darkgrey);
 }
 
-.recipe-card .recipe-info span {
-	flex-grow: 1;
-}
-
 .recipe-list .recipe-card {
 	flex: 0 1 100%;
+}
+
+.recipe {
+	word-break: break-word;
+}
+
+.recipe .recipe-info {
+	box-sizing: content-box;
+	margin: 0;
+	padding-bottom: 16px;
+}
+
+.recipe-info > span:not(:last-child)::after {
+	content: "\2022";
+	margin: 0 10px;
+}
+
+.recipe-info .profile-pic {
+	vertical-align: middle;
+	height: 2em;
+	width: auto;
+	margin-right: 10px;
+}
+
+.recipe .recipe-details {
+	margin-bottom: 30px;
+}
+
+.image-container {
+	max-width: 50em;
+}
+
+.image-container img {
+	max-width: 100%;
+	max-height: 100%;
 }
 
 .scroll-box {
@@ -779,6 +813,7 @@ form.search input[type="submit"] {
 	max-width: 50em;
 	border-radius: 5px;
 	transform: translateY(-50%);
+	resize: both;
 }
 
 .modal .modal-content .modal-title {
@@ -981,6 +1016,27 @@ footer {
 
 @media only screen and (min-width: 1600px) {
 	/* large */
+	.recipe {
+		/*display: flex;
+		flex-flow: row wrap;
+		gap: 20px;*/
+	}
+
+	.recipe .recipe-details {
+		/*flex: 1 0;
+		position: absolute;*/
+		width: 30%;
+		float: left;
+	}
+
+	.recipe .recipe-instructions {
+		/*flex: 2 0;
+		position: absolute;*/
+		width: 70%;
+		padding-left: 20px;
+		float: right;
+	}
+
 	.recipe-list .recipe-card {
 		flex-basis: calc(25% - 15px);
 	}

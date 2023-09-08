@@ -3,7 +3,7 @@
 <html lang="en">
 	<head>
 		{% block head %}
-		<title>{% block title %}{% endblock %} - My Website</title>
+		<title>{% block title %}{% endblock %} - Sharecipe</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
 		{% endblock %}
@@ -12,7 +12,7 @@
 		<div class="wrapper">
 			<header>
 				{% block header %}
-				<h1><a href="{{ url_for('index') }}">My Website</a></h1>
+				<h1><a href="{{ url_for('index') }}">Sharecipe</a></h1>
 				{% endblock %}
 			</header>
 
