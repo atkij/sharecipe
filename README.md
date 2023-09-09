@@ -21,7 +21,7 @@ An online recipe sharing website
     User=<user>
     Group=<user>
     RuntimeDirectory=gunicorn
-    WorkingDirectory=/home/<user>/website-deploy/venv
+    WorkingDirectory=/home/<user>/sharecipe-deploy/venv
     ExecStart=/home/<user>/sharecipe-deploy/venv gunicorn sharecipe.wsgi
     ExecReload=/bin/kill -s HUP $MAINPID
     KillMode=mixed
@@ -55,7 +55,7 @@ An online recipe sharing website
     
     	keepalive_timeout 5;
     
-    	root /home/<user>/sharecipe-deploy/venv/lib/python3.9/site-packages/website/static;
+    	root /home/<user>/sharecipe-deploy/venv/lib/python3.9/site-packages/sharecipe/static;
     
     	location / {
     		try_files $uri @proxy_to_app;
@@ -71,7 +71,7 @@ An online recipe sharing website
     
     	error_page 500 502 503 504 /500.html;
     	location = /500.html {
-    		root /home/<user>/sharecipe-deploy/venv/lib/python3.9/site-packages/website/static;
+    		root /home/<user>/sharecipe-deploy/venv/lib/python3.9/site-packages/sharecipe/static;
     	}
     }
     ```
