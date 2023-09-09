@@ -1,7 +1,7 @@
 from flask import abort, flash, g, redirect, render_template, request, url_for
 
-from website.db import get_db
-from website.util import login_required
+from sharecipe.db import get_db
+from sharecipe.util import login_required
 
 from . import social_blueprint as bp
 

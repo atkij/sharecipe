@@ -2,7 +2,7 @@ import os
 from flask import Flask, render_template, send_from_directory, session, url_for, g
 from datetime import datetime
 
-from website.db import get_db
+from sharecipe.db import get_db
 
 def create_app(test_config=None):
     # create and configure the app
@@ -47,11 +47,11 @@ def create_app(test_config=None):
     return app
 
 def register_blueprints(app):
-    from website.account import account_blueprint
-    from website.auth import auth_blueprint
-    from website.social import social_blueprint
-    from website.recipe import recipe_blueprint
-    from website.user import user_blueprint
+    from sharecipe.account import account_blueprint
+    from sharecipe.auth import auth_blueprint
+    from sharecipe.social import social_blueprint
+    from sharecipe.recipe import recipe_blueprint
+    from sharecipe.user import user_blueprint
     
     app.register_blueprint(account_blueprint)
     app.register_blueprint(auth_blueprint)
@@ -60,7 +60,7 @@ def register_blueprints(app):
     app.register_blueprint(user_blueprint)
 
 def initialize_extensions(app):
-    from website import db
+    from sharecipe import db
     db.init_app(app)
 
 def register_utils(app):

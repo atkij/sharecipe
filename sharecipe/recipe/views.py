@@ -5,9 +5,9 @@ import os
 import re
 import uuid
 
-from website.db import get_db
-from website.forms import RecipeForm, PhotoForm, DeleteForm
-from website.util import login_required
+from sharecipe.db import get_db
+from sharecipe.forms import RecipeForm, PhotoForm, DeleteForm
+from sharecipe.util import login_required
 
 from . import recipe_blueprint as bp
 

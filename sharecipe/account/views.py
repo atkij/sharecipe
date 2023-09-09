@@ -2,8 +2,9 @@ from datetime import datetime
 from flask import abort, current_app, flash, g, redirect, render_template, request, session, url_for
 from PIL import Image
 import os
-from website.db import get_db
-from website.util import check_password_hash, generate_filename, generate_password_hash, login_required, validate_image
+
+from sharecipe.db import get_db
+from sharecipe.util import check_password_hash, generate_filename, generate_password_hash, login_required, validate_image
 
 from . import account_blueprint as bp
 

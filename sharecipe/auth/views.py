@@ -1,8 +1,8 @@
 from flask import flash, redirect, render_template, request, session, url_for
 
-from website.db import get_db
-from website.util import check_password_hash, generate_password_hash
-from website.forms import LoginForm, RegisterForm
+from sharecipe.db import get_db
+from sharecipe.util import check_password_hash, generate_password_hash
+from sharecipe.forms import LoginForm, RegisterForm
 
 from . import auth_blueprint
 

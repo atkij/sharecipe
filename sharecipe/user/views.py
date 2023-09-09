@@ -2,8 +2,8 @@ from datetime import datetime
 from flask import abort, g, redirect, render_template, request, url_for
 from math import ceil
 
-from website.db import get_db
-from website.util import login_required
+from sharecipe.db import get_db
+from sharecipe.util import login_required
 
 from . import user_blueprint
 
