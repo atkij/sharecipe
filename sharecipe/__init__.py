@@ -33,7 +33,7 @@ def create_app(test_config=None):
     register_blueprints(app)
     
     # register index
-    register_index(app)
+    #register_index(app)
 
     # initialize extensions
     initialize_extensions(app)
@@ -49,15 +49,19 @@ def create_app(test_config=None):
 def register_blueprints(app):
     from sharecipe.account import account_blueprint
     from sharecipe.auth import auth_blueprint
+    from sharecipe.main import main_blueprint
     from sharecipe.social import social_blueprint
     from sharecipe.recipe import recipe_blueprint
     from sharecipe.user import user_blueprint
     
     app.register_blueprint(account_blueprint)
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(main_blueprint)
     app.register_blueprint(social_blueprint)
     app.register_blueprint(recipe_blueprint)
     app.register_blueprint(user_blueprint)
+
+    app.add_url_rule('/', endpoint='index')
 
 def initialize_extensions(app):
     from sharecipe import db
@@ -82,6 +86,10 @@ def register_utils(app):
     @app.template_filter('strftime')
     def format_time_filter(s, f):
         return datetime.fromisoformat(s).strftime(f)
+
+    @app.template_filter('name')
+    def name(user):
+        return user['name'] if user['name'] else user['username']
 
     @app.template_test('path')
     def path_exists(path):

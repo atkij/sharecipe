@@ -1,6 +1,7 @@
 import functools
 import hashlib
 import imghdr
+from PIL import Image, UnidentifiedImageError
 import os
 import time
 
@@ -40,6 +41,20 @@ def validate_image(stream):
     header = stream.read(512)
     stream.seek(0)
     return imghdr.what(None, header) is not None
+
+def resize_image(image, size):
+    try:
+        img = Image.open(image.stream)
+
+        if img.size[0] <= size and img.size[1] <= size:
+            return img
+
+        if img.size[0] > img.size[1]:
+            return img.resize((size, int((size / img.size[0]) * img.size[1])))
+        else:
+            return img.resize((int((size / img.size[1]) * img.size[0]), size))
+    except UnidentifiedImageError:
+        return None
 
 def generate_filename():
     return hashlib.md5(os.urandom(16)).hexdigest()

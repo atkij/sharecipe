@@ -27,6 +27,16 @@
 </form>
 {%- endmacro %}
 
+{% macro render_field(field) -%}
+<div>
+	{{ field()|safe }}
+	{{ field.label|safe }}
+	{{ help(field.description) }}
+	<div class="error">{% for error in field.errors %}<span class="error">{{ error }}</span>{% endfor %}</div>
+</div>
+{%- endmacro %}
+	
+
 {% macro field(name, label, help, error) -%}
 <div>
 	{{ caller(name) }}
@@ -36,14 +46,21 @@
 </div>
 {%- endmacro %}
 
-{% macro profile_pic(user_id, size=None) -%}
-<img class="profile-pic {{ size }}" src="{{ profile_pic_uri(user_id) }}">
+{% macro profile_pic(user, size=None) -%}
+<img class="profile-pic {{ size }}" src="{{ url_for('upload', filename=user['picture']) if user['picture'] else url_for('static', filename='profile.svg') }}">
+{%- endmacro %}
+
+{% macro user_link(user, seperator=True) -%}
+<div class="user-link {{ 'seperator' if seperator }}">
+	<div class="profile-pic-container">{{ profile_pic(user) }}</div>
+	<a href="{{ url_for('user.index', user_id=user['user_id']) }}"><span>{{ user|name }}</span></a>
+</div>
 {%- endmacro %}
 
 {% macro recipe_card(recipe) -%}
 <div class="recipe-card">
 		<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
-		<p class="recipe-author">By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe['username'] }}</a></p>
+		<p class="recipe-author">By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe|name }}</a></p>
 		<div class="recipe-info">
 			<span>Serves {{ recipe['servings'] }}</span>
 			<span>{{ recipe['time'] }} minutes</span>
@@ -70,19 +87,23 @@
 {%- endmacro %}
 
 
-{% macro tabs(id) -%}
+{% macro tab_view() -%}
 <div class="tab-view">
-	{{ caller(id) }}
+	{{ caller() }}
 </div>
 {%- endmacro %}
 
-{% macro tab(name, id, class='', default=False) -%}
-<input type="radio" name="{{ id }}" class="tab-button {{ class }}" value="{{ name }}" {{ 'checked' if default }}>
+{% macro tab(name, default=False) -%}
+<a href="#" class="tab-button{{ ' active' if default }}">{{ name }}</a>
 <div class="tab-content">{{ caller() }}</div>
 {%- endmacro %}
 
-{% macro tab_action(name, action, class='') -%}
-<a class="tab-button-right {{ class }}" href="{{ action }}">{{ name }}</a>
+{% macro tab_link(name, action) -%}
+<a class="tab-link" href="{{ action }}">{{ name }}</a>
+{%- endmacro %}
+
+{% macro tab_seperator() -%}
+<span class="tab-seperator"></span>
 {%- endmacro %}
 
 {% macro modal(name, title='') -%}

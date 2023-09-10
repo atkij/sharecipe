@@ -1,23 +1,27 @@
 {% extends 'base.html' %}
-{% block title %}Delete Account{% endblock %}
+{% from 'macros.html' import render_field, tab_view, tab, tab_link %}
+{% block title %}My Account{% endblock %}
 
 {% block content %}
-{% if success %}
-<p>Account deletion successful.</p>
-<p>Return <a href="{{ url_for('index') }}">home</a>?</p>
-{% else %}
-<p>Are you sure you would like to delete your account?</p>
-<p>Enter your password below to continue.</p>
-<form method="post">
-	<p class="error">{{ error['form'] }}</p>
 
-	<div>
-		<label for="password">Password</label>
-		<span class="error">{{ error['password'] }}</span>
-		<input type="password" name="password" id="password" maxlength="256" required>
-	</div>
+{% call tab_view() %}
+
+{{ tab_link('Profile', url_for('account.profile')) }}
+{{ tab_link('Password', url_for('account.password')) }}
+
+{% call tab('Delete', default=True) %}
+<p>Are you sure you would like to delete your account?</p>
+<p>You may want to transfer your data before you continue.</p>
+<p>Enter your password below to continue.</p>
+<form action="{{ url_for(request.endpoint) }}" method="post">
+	{{ form.csrf_token }}
+
+	{{ render_field(form.password) }}
 
 	<input type="submit" value="Delete Account">
 </form>
-{% endif %}
+{% endcall %}
+
+{% endcall %}
+
 {% endblock %}

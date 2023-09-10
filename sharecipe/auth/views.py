@@ -15,8 +15,8 @@ def register():
 
         try:
             db.execute(
-                    'INSERT INTO user (username, password, forename, surname, last_login) VALUES (?, ?, ?, ?, datetime("now"))',
-                    (form.username.data, generate_password_hash(form.password.data), form.forename.data, form.surname.data)
+                    'INSERT INTO user (username, password, name, last_login) VALUES (?, ?, ?, datetime("now"))',
+                    (form.username.data, generate_password_hash(form.password.data), form.name.data)
                     )
             db.commit()
         except db.IntegrityError:

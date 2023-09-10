@@ -1,8 +1,0 @@
-{% extends 'base.html' %}
-{% block title %}Home{% endblock %}
-
-{% block content %}
-{% if g.user %}
-<p>Welcome {{ g.user['username'] }}</p>
-{% endif %}
-{% endblock %}

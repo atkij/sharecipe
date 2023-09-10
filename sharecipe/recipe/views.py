@@ -7,7 +7,7 @@ import uuid
 
 from sharecipe.db import get_db
 from sharecipe.forms import RecipeForm, PhotoForm, DeleteForm
-from sharecipe.util import login_required
+from sharecipe.util import login_required, resize_image
 
 from . import recipe_blueprint as bp
 
@@ -18,12 +18,12 @@ def index():
     user_recipes = None
 
     latest_recipes = db.execute(
-            'SELECT recipe.*, user.username FROM recipe INNER JOIN user ON recipe.user_id = user.user_id ORDER BY created DESC LIMIT 10'
+            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id ORDER BY created DESC LIMIT 10'
             ).fetchall()
 
     if g.user:
         user_recipes = db.execute(
-                'SELECT recipe.*, user.username FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE recipe.user_id = ? ORDER BY created DESC LIMIT 10',
+                'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE recipe.user_id = ? ORDER BY created DESC LIMIT 10',
                 (g.user['user_id'],)
                 ).fetchall()
     
@@ -77,7 +77,7 @@ def search():
         db = get_db()
         
         search = ' + '.join(['(tags LIKE ?) + (title LIKE ?) + (description LIKE ?)'] * len(keywords))
-        query = f'SELECT recipe.*, user.username, ({search}) AS best_match FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE best_match > 0 AND (vegetarian = ? OR vegetarian = ?) AND (recipe.user_id = ? OR ?) ORDER BY best_match DESC LIMIT ? OFFSET ?'
+        query = f'SELECT recipe.*, user.*, ({search}) AS best_match FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE best_match > 0 AND (vegetarian = ? OR vegetarian = ?) AND (recipe.user_id = ? OR ?) ORDER BY best_match DESC LIMIT ? OFFSET ?'
 
         keywords = [i for i in keywords for _ in (0, 1, 2)]
 
@@ -114,7 +114,7 @@ def latest():
     pages = ceil(count / limit)
 
     recipes = db.execute(
-            'SELECT recipe.*, user.username FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE (vegetarian = ? OR vegetarian = ?) AND recipe.user_id = ? OR ? ORDER BY created DESC LIMIT ? OFFSET ?',
+            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE (vegetarian = ? OR vegetarian = ?) AND recipe.user_id = ? OR ? ORDER BY created DESC LIMIT ? OFFSET ?',
             (vegetarian, vegetarian + 1, user_id, not user_id, limit, ((page - 1) * limit))
             ).fetchall()
 
@@ -217,10 +217,16 @@ def upload_photo(recipe_id):
     elif g.user['user_id'] != recipe['user_id']:
         abort(403)
 
-    if request.method == 'POST' and form.validate_on_submit():
+    if request.method == 'POST' and form.validate():
         photo = form.photo.data
         filename = str(uuid.uuid4()) + '.' + photo.filename.split('.')[-1]
-        photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], 'photos', filename))
+
+        photo = resize_image(photo, 1024)
+        if photo is None:
+            flash('Unsupported image format.', 'error')
+            return redirect(url_for('recipe.view', recipe_id=recipe_id))
+        
+        photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
 
         db.execute(
                 'UPDATE recipe SET photo = ? WHERE recipe_id = ?',
@@ -230,10 +236,8 @@ def upload_photo(recipe_id):
 
         flash('Photo uploaded successfully.', 'success')
     else:
-        if form.errors:
-            flash(next(iter(form.errors.values()))[0], 'error')
-        else:
-            flash('Unable to upload photo.', 'error')
+        for _, error in form.errors:
+            flash(error, 'error')
 
     return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
@@ -254,7 +258,7 @@ def delete_photo(recipe_id):
         abort(403)
 
     if request.method == 'POST' and form.validate():
-        filename = os.path.join(current_app.config['UPLOAD_FOLDER'], 'photos', recipe['photo'])
+        filename = os.path.join(current_app.config['UPLOAD_FOLDER'], recipe['photo'])
         if os.path.exists(filename):
             os.remove(filename)
 

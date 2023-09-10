@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import field, help, modal, modal_button, profile_pic, tab, tabs, tab_action %}
+{% from 'macros.html' import field, help, modal, modal_button, profile_pic, tab_view, tab, tab_link %}
 {% block title %}My Account{% endblock %}
 
 {% block content %}
@@ -23,9 +23,9 @@
 </form>
 {% endcall %}
 
-{% call(id) tabs('tab') %}
+{% call tab_view() %}
 
-{% call tab('Profile', id, default=True) %}
+{% call tab_link('Profile', url_for('account.profile'), default=True) %}
 <form action="{{ url_for(request.endpoint) }}" method="post">
 	<input type="hidden" name="action" value="profile">
 	
@@ -38,12 +38,8 @@
 	</div>
 
 
-	{% call(name) field('forename', 'Forename', 'This is what we\'ll call you.', error) %}
-	<input name="{{ name }}" id="{{ name }}" value="{{ request.form[name] or g.user[name] }}" maxlength="36">
-	{% endcall %}
-
-	{% call(name) field('surname', 'Surname', 'This is what we\'ll call you.', error) %}
-	<input name="{{ name }}" id="{{ name }}" value="{{ request.form[name] or g.user[name] }}" maxlength="36">
+	{% call(name) field('name', 'Name', 'This is what we\'ll call you.', error) %}
+	<input name="{{ name }}" id="{{ name }}" value="{{ request.form[name] or g.user[name] }}" maxlength="56">
 	{% endcall %}
 
 	{% call(name) field('bio', 'Bio', 'Tell us about yourself.', error) %}
@@ -54,8 +50,8 @@
 </form>
 {% endcall %}
 
-{% call tab('Password', id, default=(request.args.get(id, '') == 'password')) %}
-<form action="{{ url_for(request.endpoint, **{id: 'password'}) }}" method="post">
+{% call tab_link('Password', url_for('account.password')) %}
+<form action="{{ url_for(request.endpoint) }}" method="post">
 	<input type="hidden" name="action" value="password">
 
 	{% call(name) field('current-password', 'Current password', 'Enter your current password.', error) %}
@@ -92,11 +88,11 @@
 </form>
 {% endcall %#}
 
-{% call tab('Delete', id, default=(request.args.get(id, '') == 'delete')) %}
+{% call tab_link('Delete', url_for('account.delete')) %}
 <p>Are you sure you would like to delete your account?</p>
 <p>You may want to transfer your data before you continue.</p>
 <p>Enter your password below to continue.</p>
-<form action="{{ url_for(request.endpoint, **{id: 'delete'}) }}" method="post">
+<form action="{{ url_for(request.endpoint) }}" method="post">
 	<input type="hidden" name="action" value="delete">
 
 	{% call(name) field('password', 'Password', 'Enter your password to delete your account.', error) %}

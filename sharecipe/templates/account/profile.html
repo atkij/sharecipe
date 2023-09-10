@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import field, render_field, help, modal, modal_button, profile_pic, tab_view, tab, tab_link %}
+{% block title %}My Account{% endblock %}
+
+{% block content %}
+{% call modal('update-profile-pic') %}
+<h1>Update Profile Picture</h1>
+<p>Upload an image for your profile below.</p>
+<form action="{{ url_for('account.upload_picture') }}" method="post" enctype="multipart/form-data">
+	{{ upload_picture_form.csrf_token }}
+	{{ upload_picture_form.picture }}
+	<input type="submit" value="Update Picture">
+</form>
+{% endcall %}
+
+{% call modal('delete-profile-pic') %}
+<h1>Delete Profile Picture</h1>
+<p>Are you sure you want to do this?</p>
+<form action="{{ url_for('account.delete_picture') }}" method="post">
+	{{ delete_picture_form.csrf_token }}
+	{{ delete_picture_form.confirm }}
+</form>
+{% endcall %}
+
+{% call tab_view() %}
+
+{% call tab('Profile', default=True) %}
+<form action="" method="post">
+	{{ form.csrf_token }}
+	
+	<div class="update-profile-pic-container">
+		{{ profile_pic(g.user) }}
+		<div class="profile-pic-buttons">
+			{{ modal_button('update-profile-pic', 'Update') }}
+			{{ modal_button('delete-profile-pic', 'Delete') }}
+		</div>
+	</div>
+
+	{{ render_field(form.name) }}
+
+	{{ render_field(form.bio) }}
+
+	<input type="submit" value="Update Profile">
+</form>
+{% endcall %}
+
+{{ tab_link('Password', url_for('account.password')) }}
+
+{{ tab_link('Delete', url_for('account.delete')) }}
+
+{% endcall %}
+
+{% endblock %}

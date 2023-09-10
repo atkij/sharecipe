@@ -7,9 +7,9 @@ CREATE TABLE user (
 	user_id INTEGER NOT NULL PRIMARY KEY,
 	username TEXT NOT NULL UNIQUE CHECK (LENGTH(username) >= 3 AND LENGTH(username) <= 36),
 	password TEXT NOT NULL CHECK (LENGTH(password) >= 8 AND LENGTH(password) <= 256),
-	forename TEXT CHECK (LENGTH(forename) <= 36),
-	surname TEXT CHECK (LENGTH(surname) <= 36),
+	name TEXT CHECK (LENGTH(name) <= 56),
 	bio TEXT CHECK (LENGTH(bio) <= 400),
+	picture TEXT,
 	created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	last_login TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

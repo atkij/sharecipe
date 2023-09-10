@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import profile_pic, recipe_scroll, user_link %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+{% if g.user %}
+<p>Welcome {{ g.user|name }}</p>
+{% endif %}
+
+<section>
+	{% if latest_recipes %}
+	{{ recipe_scroll(latest_recipes, 'Latest Recipes', {}) }}
+	{% endif %}
+</section>
+
+{% if top_chefs %}
+<section>
+	<div class="box">
+	<h3>Top Chefs</h3>
+	<div class="content">
+	{% for chef in top_chefs %}
+	{{ user_link(chef) }}
+	{% endfor %}
+	</div>
+	</div>
+</section>
+{% endif %}
+{% endblock %}

@@ -426,8 +426,8 @@ main > h1 {
 	margin: 0;
 }
 
-main > section {
-	margin: 20px 0;
+section {
+	margin-bottom: 40px;
 }
 
 form > div {
@@ -690,6 +690,25 @@ form.search input[type="submit"] {
 	max-height: 100%;
 }
 
+.box {
+	margin: 20px 0;
+	padding: 0;
+	border: 1px solid var(--darkgrey);
+	border-radius: 10px 10px 0 0;
+	background-color: var(--lightgrey);
+}
+
+.box h3 {
+	margin: 10px 20px;
+	font-weight: bold;
+}
+
+.box .content {
+	padding: 20px;
+	border-top: 1px solid var(--darkgrey);
+	background-color: var(--white);
+}
+
 .scroll-box {
 	margin: 20px 0;
 	padding: 0;
@@ -744,9 +763,7 @@ form.search input[type="submit"] {
 	background-color: var(--lightgrey);
 }
 
-.tab-view [class^="tab-button"] {
-	appearance: none;
-	outline: none;
+.tab-view .tab-button, .tab-view .tab-link {
 	order: 1;
 	display: inline-block;
 	margin: 0;
@@ -759,20 +776,21 @@ form.search input[type="submit"] {
 	transition: 0.1s;
 }
 
-.tab-view .tab-button-right:first-of-type {
+.tab-view .tab-seperator {
+	order: 1;
 	margin-left: auto;
 }
 
-.tab-view [class^="tab-button"]:hover {
+.tab-view .tab-button:hover, .tab-view .tab-link:hover {
 	background-color: var(--grey);
 }
 
-.tab-view [class^="tab-button"]:checked {
+.tab-view .tab-button:active, .tab-view .tab-link:active {
 	background-color: var(--darkgrey);
 }
 
-.tab-view [class^="tab-button"]::after {
-	content: attr(value);
+.tab-view .tab-button.active {
+	background-color: var(--darkgrey);
 }
 
 .tab-view .tab-content {
@@ -785,10 +803,9 @@ form.search input[type="submit"] {
 	background-color: white;
 }
 
-.tab-view [class^="tab-button"]:checked + .tab-content {
+.tab-view .tab-button.active + .tab-content {
 	display: block;
 }
-
 
 .modal {
 	position: fixed;
@@ -828,7 +845,8 @@ input[type="checkbox"]:checked + .modal {
 	border: 1px solid var(--darkgrey);
 	border-radius: 50%;
 	height: 100%;
-	width: auto;
+	width: 100%;
+	object-fit: cover;
 }
 
 .profile-pic-left {
@@ -875,12 +893,15 @@ input[type="checkbox"]:checked + .modal {
 	height: 2em;
 }
 
-.user-link:not(:last-child) {
+.user-link.seperator:not(:last-child) {
 	border-bottom: 1px solid var(--darkgrey);
 }
 
-.user-link .profile-pic {
+.user-link .profile-pic-container {
+	display: inline-block;
 	vertical-align: middle;
+	height: 2em;
+	width: 2em;
 }
 
 .user-link span {
@@ -1017,21 +1038,19 @@ footer {
 @media only screen and (min-width: 1600px) {
 	/* large */
 	.recipe {
-		/*display: flex;
-		flex-flow: row wrap;
-		gap: 20px;*/
+		display: flex;
 	}
-
 	.recipe .recipe-details {
-		/*flex: 1 0;
-		position: absolute;*/
+		flex: 1 1 auto;
 		width: 30%;
+		margin: 0;
+		padding-right: 20px;
+		border-right: 1px solid var(--grey);
 		float: left;
 	}
 
 	.recipe .recipe-instructions {
-		/*flex: 2 0;
-		position: absolute;*/
+		flex: 1 1 auto;
 		width: 70%;
 		padding-left: 20px;
 		float: right;

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import profile_pic, recipe_scroll, tab, tabs, tab_action %}
-{% block title %}{% if user['forename'] or user['surname'] %}{{ user['forename'] }} {{  user['surname'] }}{% else %}{{ user['username'] }}{% endif %}{% endblock %}
+{% from 'macros.html' import profile_pic, user_link, recipe_scroll, tab_view, tab, tab_link, tab_seperator %}
+{% block title %}{{ user|name }}{% endblock %}
 
 {% block heading %}
 <div class="profile-pic-left">{{ profile_pic(user['user_id']) }}</div>
@@ -15,28 +15,24 @@
 {{ recipe_scroll(recipes, 'Recipes', {'user_id': user['user_id']}) }}
 {% endif %}
 
-{% call(id) tabs('tabs') %}
+{% call tab_view() %}
 
-{% call tab('Following (%s)' % following|length, id, default=True) %}
+{% call tab('Following (%s)' % following|length, default=True) %}
 {% for u in following %}
-<div class="user-link">
-	{{ profile_pic(u['user_id']) }}
-	<a href="{{ url_for('user.index', user_id=u['user_id']) }}"><span>{% if u['forename'] or u['surname'] %}{{ u['forename'] }} {{ u['surname'] }}{% else %}{{ u['username'] }}{% endif %}</span></a>
-</div>
+{{ user_link(u) }}
 {% endfor %}
 {% endcall %}
 
-{% call tab('Followers (%s)' % followers|length, id) %}
+{% call tab('Followers (%s)' % followers|length) %}
 {% for u in followers %}
-<div class="user-link">
-		{{ profile_pic(u['user_id']) }}
-		<a href="{{ url_for('user.index', user_id=u['user_id']) }}"><span>{% if u['forename'] or u['surname'] %}{{ u['forename'] }} {{ u['surname'] }}{% else %}{{ u['username'] }}{% endif %}</span></a>
-</div>
+{{ user_link(u) }}
 {% endfor %}
 {% endcall %}
+
+{{ tab_seperator() }}
 
 {% if g.user and g.user['user_id'] != user['user_id'] %}
-{{ tab_action('Unfollow', url_for('user.unfollow', user_id=user['user_id'])) if follows else tab_action('Follow', url_for('user.follow', user_id=user['user_id'])) }}
+{{ tab_link('Unfollow', url_for('user.unfollow', user_id=user['user_id'])) if follows else tab_link('Follow', url_for('user.follow', user_id=user['user_id'])) }}
 {% endif %}
 
 {% endcall %}

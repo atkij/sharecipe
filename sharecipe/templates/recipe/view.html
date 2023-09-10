@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import modal, profile_pic, render_form %}
+{% from 'macros.html' import modal, profile_pic, render_form, user_link %}
 {% block title %}{{ recipe['title'] }}{% endblock %}
 
 {% block heading %}
@@ -40,15 +40,7 @@
 
 <div class="recipe">
 <div class="recipe-details">
-	<div class="recipe-info">
-		{{ profile_pic(recipe['user_id']) }}
-		<a href="{{ url_for('user.index', user_id=recipe['user_id']) }}"><span>{% if recipe['forename'] or recipe['surname'] %}{{ recipe['forename']}} {{ recipe['surname'] }}{% else %}{{ recipe['username'] }}{% endif %}</span></a>
-	</div>
-
-	{#<div class="recipe-info">
-	<span>Created {{ recipe['created']|strftime('%d/%m/%Y') }}</span>
-	{% if recipe['updated'] %}<span>Updated {{ recipe['updated']|strftime('%d/%m/%Y') }}</span>{% endif %}
-	</div>#}
+	{{ user_link(recipe, seperator=False) }}
 
 	<div class="recipe-info">
 	<span>Serves {{ recipe['servings'] }}</span>
@@ -59,7 +51,7 @@
 
 	{% if recipe['photo'] %}
 	<div class="image-container">
-		<img src="{{ url_for('upload', filename='photos/' + recipe['photo']) }}">
+		<img src="{{ url_for('upload', filename=recipe['photo']) }}">
 	</div>
 	{% endif %}
 

@@ -1,21 +1,143 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import BooleanField, Field, IntegerField, PasswordField, StringField, TextAreaField
-from wtforms.validators import EqualTo, InputRequired, Length, NumberRange, Optional
+from wtforms import BooleanField, Field, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
+from wtforms.validators import EqualTo, InputRequired, Length, NumberRange, Optional, ValidationError
 from wtforms.widgets import TextInput
 
+from PIL import Image
 
+from flask import g
+
+from sharecipe.util import check_password_hash
+
+# additional validator for checking when one field is not equal to another
+class NotEqualTo(object):
+    def __init__(self, fieldname, message=None):
+        self.fieldname = fieldname
+        self.message = message
+
+    def __call__(self, form, field):
+        try:
+            other = form[self.fieldname]
+        except KeyError as exc:
+            raise ValidationError(
+                    field.gettext('Invalid field name \'%s\'.') % self.fieldname
+                    ) from exc
+
+        if field.data != other.data:
+            return
+
+        d = {
+                'other_label': hasattr(other , 'label')
+                and other.label.text
+                or self.fieldname,
+                'other_name': self.fieldname,
+                }
+
+        message = self.message
+        if message is None:
+            message = field.gettext('Field must not be equal to %(other_name)s.')
+
+        raise ValidationError(message % d)
+
+# validator check if password is correct for already signed in user
+class PasswordCheck(object):
+    def __init__(self, message=None):
+        self.message = message
+
+    def __call__(self, form, field):
+        if check_password_hash(g.user['password'], field.data):
+            return
+
+        message = self.message
+        if message is None:
+            message = 'Password incorrect'
+
+        raise ValidationError(message)
+
+def process_profile_pic(stream):
+    img = Image.open(stream).convert('RGBA')
+    w, h = img.size
+    new_img = Image.new('RGBA', img.size, 'WHITE')
+    new_img.paste(img, (0, 0), img)
+    img_crop = new_img.crop((0, 0, h if w > h else w, w if h > w else h))
+    img_resize = img_crop.resize((1024, 1024))
+    return img_resize.convert('RGB')
+
+# form when logging in to sharecipe
 class LoginForm(FlaskForm):
-    username = StringField('Username', [InputRequired(message='Please enter a username')], description='Enter your username')
-    password = PasswordField('Password', [InputRequired(message='Please enter a password')], description='Enter your password')
+    username = StringField('Username', [
+        InputRequired(message='Please enter a username')
+        ], description='Enter your username')
+    password = PasswordField('Password', [
+        InputRequired(message='Please enter a password')
+        ], description='Enter your password')
 
+# form when signing up to sharecipe
 class RegisterForm(FlaskForm):
-    username = StringField('Username', [InputRequired(message='Please choose a username'),Length(min=3, max=36, message='Your username must be between 3 and 36 characters')], description='Choose a unique username to identify your account')
-    forename = StringField('Forename', [Optional(), Length(max=36, message='Your forename cannot be more than 36 characters')], description='Enter your forename')
-    surname = StringField('Surname', [Optional(), Length(max=36, message='Your surname cannot be more than 36 characters')], description='Enter your surname')
-    password = PasswordField('Password', [InputRequired(message='Please choose a password'), Length(min=8, max=256, message='Your password must be between 8 and 256 characters.')], description='Choose a strong password to protect your account')
-    confirm_password = PasswordField('Confirm Password', [InputRequired(message='Please confirm your password'), EqualTo('password', message='Passwords must match')], description='Confirm your password')
+    username = StringField('Username', [
+        InputRequired(message='Please choose a username'),
+        Length(min=3, max=36, message='Your username must be between 3 and 36 characters')
+        ], description='Choose a unique username to identify your account')
+    name = StringField('Name', [
+        Optional(), Length(max=56,
+            message='Your name cannot be more than 56 characters')
+        ], description='This is how you\'ll be known')
+    password = PasswordField('Password', [
+        InputRequired(message='Please choose a password'),
+        Length(min=8, max=256, message='Your password must be between 8 and 256 characters.')
+        ], description='Choose a strong password to protect your account')
+    confirm_password = PasswordField('Confirm Password', [
+        InputRequired(message='Please confirm your password'),
+        EqualTo('password', message='Passwords must match')
+        ], description='Confirm your password')
 
+# form for updating profile
+class UpdateProfileForm(FlaskForm):
+    name = StringField('Name', [
+        Optional(),
+        Length(max=56, message='Your name cannot be more than 56 characters')
+        ], description='This is how you\'ll be known')
+    bio = TextAreaField('Bio', [
+        Optional(),
+        Length(max=400, message='Bio cannot exceed 400 characters')
+        ], description='Tell us about yourself')
+
+# form for uploading profile picture
+class UploadPictureForm(FlaskForm):
+    picture = FileField('Profile Picture', [
+        FileRequired(message='No photo supplied.'),
+        FileAllowed(['jpg', 'jpeg', 'png'], message='Profile picture must be a jpg or png file.'),
+        ], render_kw={'accept': 'image/jpeg,image/png'}, description='Upload a picture for your account profile')
+
+# form for deleting profile picture
+class DeletePictureForm(FlaskForm):
+    confirm = SubmitField('Delete Picture')
+
+# form for updating password
+class UpdatePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', [
+        InputRequired(message='Please enter your password'),
+        PasswordCheck(message='Incorrect password'),
+        ], description='Enter your current password')
+    new_password = PasswordField('New Password', [
+        InputRequired(message='Please choose a new password'),
+        Length(min=8, max=256, message='Your new password must be between 8 and 256 characters.'),
+        NotEqualTo('current_password', message='New password must be different.')
+        ], description='Choose a strong password to protect your account')
+    confirm_password = PasswordField('Confirm Password', [
+        InputRequired(message='Please confirm your new password'),
+        EqualTo('new_password', message='Passwords must match')
+        ], description='Confirm your password')
+
+# form for deleting account
+class DeleteAccountForm(FlaskForm):
+    password = PasswordField('Password', [
+        InputRequired(message='Please enter your password'),
+        PasswordCheck(message='Incorrect password'),
+        ], description='Enter your password to delete your account')
+
+# form for creating and updating recipe
 class RecipeForm(FlaskForm):
     title = StringField('Title', [
         InputRequired(message='Title is required'),
@@ -64,11 +186,13 @@ class RecipeForm(FlaskForm):
         else:
             return ''
 
+# form for uploading recipe photo
 class PhotoForm(FlaskForm):
     photo = FileField('Photo', [
         FileRequired(message='No photo supplied.'),
         FileAllowed(['jpg', 'jpeg', 'png'], message='Photo must be a jpg or png file.'),
         ], render_kw={'accept': 'image/jpeg,image/png'}, description='Upload a photo of your recipe')
 
+# form for deleting recipe photo and recipe (for csrf)
 class DeleteForm(FlaskForm):
     pass
