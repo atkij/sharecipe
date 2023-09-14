@@ -3,7 +3,7 @@
 {% block title %}{{ user|name }}{% endblock %}
 
 {% block heading %}
-<div class="profile-pic-left">{{ profile_pic(user['user_id']) }}</div>
+<div class="profile-pic-left">{{ profile_pic(user) }}</div>
 <h1>{{ self.title() }}</h1>
 <p class="info-horizontal"><span>{{ user['username'] }}</span>&bull;<span>Joined {{ joined }}</span>&bull;<span>Active {% if active > 0 %}{{ active }} days ago{% else %}today{% endif %}</span></p>
 {% endblock %}
