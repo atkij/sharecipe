@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import BooleanField, Field, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
+from wtforms import BooleanField, Field, IntegerField, PasswordField, RadioField, StringField, SubmitField, TextAreaField
 from wtforms.validators import EqualTo, InputRequired, Length, NumberRange, Optional, ValidationError
 from wtforms.widgets import TextInput
 
@@ -192,6 +192,11 @@ class PhotoForm(FlaskForm):
         FileRequired(message='No photo supplied.'),
         FileAllowed(['jpg', 'jpeg', 'png'], message='Photo must be a jpg or png file.'),
         ], render_kw={'accept': 'image/jpeg,image/png'}, description='Upload a photo of your recipe')
+
+class RateForm(FlaskForm):
+    rating = RadioField('Rating', [
+        InputRequired(message='Please provide a rating'),
+        ], choices=[('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5')], description='Rate this recipe out of 5')
 
 # form for deleting recipe photo and recipe (for csrf)
 class DeleteForm(FlaskForm):

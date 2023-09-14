@@ -21,8 +21,6 @@ def create_app(test_config=None):
     try:
         os.makedirs(app.instance_path)
         os.makedirs(app.config['UPLOAD_FOLDER'])
-        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'profile'))
-        os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'photos'))
     except OSError:
         pass
     
@@ -32,9 +30,6 @@ def create_app(test_config=None):
     # register blueprints
     register_blueprints(app)
     
-    # register index
-    #register_index(app)
-
     # initialize extensions
     initialize_extensions(app)
 
@@ -142,8 +137,3 @@ def configure_logging(app):
     file_handler.setFormatter(file_formatter)
 
     app.logger.addHandler(file_handler)
-
-def register_index(app):
-    @app.route('/')
-    def index():
-        return render_template('index.html')

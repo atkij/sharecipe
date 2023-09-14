@@ -1,9 +1,9 @@
 :root {
-	--colour1: #01346b;
-	--colour2: #4a99ee;
-	--colour3: #0273eb;
-	--colour4: #2e4b6b;
-	--colour5: #025ab8;
+	--darkblue: #01346b;
+	--lightblue: #4a99ee;
+	--brightblue: #0273eb;
+	--greyblue: #2e4b6b;
+	--blue: #025ab8;
 	--success: #66ff99;
 	--info: #66c2ff;
 	--warning: #ffa366;
@@ -257,7 +257,7 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 	padding: 8px 8px;
 	font-family: inherit;
 	font-size: inherit;
-	background-color: var(--colour1);
+	background-color: var(--darkblue);
 	color: white;
 	border: none;
 	text-decoration: none;
@@ -291,7 +291,7 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 }
 
 .button:hover {
-	background-color: var(--colour3);
+	background-color: var(--brightblue);
 }
 
 .button.light:hover {
@@ -299,7 +299,7 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 }
 
 .button:active, .button:focus {
-	background-color: var(--colour5);
+	background-color: var(--blue);
 }
 
 .button.light:active, .button.light:focus {
@@ -326,7 +326,7 @@ header a {
 
 nav {
 	width: 100%;
-	background-color: var(--colour1);
+	background-color: var(--darkblue);
 	position: sticky;
 	top: 0;
 	z-index: 1;
@@ -344,17 +344,17 @@ nav #menu-checkbox {
 
 nav label {
 	cursor: pointer;
-	background-color: var(--colour1);
+	background-color: var(--darkblue);
 	color: white;
 	float: right;
 }
 
 nav label:hover {
-	background-color: var(--colour3);;
+	background-color: var(--brightblue);;
 }
 
 nav input#menu-checkbox:checked ~ label {
-	background-color: var(--colour5);
+	background-color: var(--blue);
 }
 
 nav li.nav-dropdown button {
@@ -363,7 +363,7 @@ nav li.nav-dropdown button {
 	
 nav ul {
 	max-height: 0;
-	background-color: var(--colour1);
+	background-color: var(--darkblue);
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
@@ -387,15 +387,11 @@ nav a, nav label{
 }
 
 nav a:hover {
-	background-color: var(--colour3);
-}
-
-nav a:active {
-	background-color: var(--colour5);
+	background-color: var(--brightblue);
 }
 
 nav button {
-	background-color: var(--colour1);
+	background-color: var(--darkblue);
 	color: white;
 	border: none;
 	font-family: serif;
@@ -405,15 +401,14 @@ nav button {
 }
 
 nav button:hover {
-	background-color: var(--colour3);
 }
 
 nav button:active {
-	background-color: var(--colour5);
+	background-color: var(--blue);
 }
 
 nav button:focus {
-	background-color: var(--colour5);
+	background-color: var(--blue);
 }
 
 main {
@@ -426,8 +421,13 @@ main > h1 {
 	margin: 0;
 }
 
-section {
-	margin-bottom: 40px;
+main > section {
+	margin: 20px 0;
+}
+
+hr {
+	border: none;
+	border-top: 1px solid var(--grey);
 }
 
 form > div {
@@ -472,16 +472,16 @@ form input[type="file"]::file-selector-button {
 	font-family: inherit;
 	cursor: pointer;
 	color: var(--white);
-	background-color: var(--colour1);
+	background-color: var(--darkblue);
 	transition: 0.1s;
 }
 
 form input[type="file"]::file-selector-button:hover {
-	background-color: var(--colour3);
+	background-color: var(--brightblue);
 }
 
 form input[type="file"]::file-selector-button:active {
-	background-color: var(--colour5);
+	background-color: var(--blue);
 }
 
 form input[type="number"] {
@@ -499,7 +499,7 @@ form input[type="checkbox"]:not(.button) {
 }
 
 form input[type="checkbox"]:not(.button):checked {
-	border-color: var(--colour5);
+	border-color: var(--blue);
 }
 
 form input[type="checkbox"]:not(.button)::after {
@@ -510,7 +510,7 @@ form input[type="checkbox"]:not(.button)::after {
 	bottom: 3px;
 	width: 0.5em;
 	height: 1em;
-	border: 1px solid var(--colour5);
+	border: 1px solid var(--blue);
 	border-width: 0 3px 3px 0;
 	transform: rotate(0) scale(0);
 	transition: transform 0.05s;
@@ -521,11 +521,11 @@ form input[type="checkbox"]:not(.button):checked::after {
 }
 
 form input:hover {
-	border-color: var(--colour3);
+	border-color: var(--brightblue);
 }
 
 form input:focus {
-	border-color: var(--colour5);
+	border-color: var(--blue);
 }
 
 form textarea {
@@ -542,11 +542,11 @@ form textarea {
 }
 
 form textarea:hover {
-	border-color: var(--colour3);
+	border-color: var(--brightblue);
 }
 
 form textarea:focus {
-	border-color: var(--colour5);
+	border-color: var(--blue);
 }
 
 form input[type="submit"] {
@@ -554,7 +554,7 @@ form input[type="submit"] {
 	margin: 0;
 	margin-left: auto;
 	padding: 9px;
-	background-color: var(--colour1);
+	background-color: var(--darkblue);
 	color: white;
 	border: none;
 	cursor: pointer;
@@ -562,11 +562,39 @@ form input[type="submit"] {
 }
 
 form input[type="submit"]:hover {
-	background-color: var(--colour3);
+	background-color: var(--brightblue);
 }
 
 form input[type="submit"]:focus {
-	background-color: var(--colour5);
+	background-color: var(--blue);
+}
+
+form .rating {
+	display: flex;
+	flex-direction: row-reverse;
+	justify-content: flex-end;
+}
+
+form .rating input {
+	display: none;
+}
+
+form .rating label i {
+	color: gold;
+	font-size: 1.5em;
+	margin-right: 5px;
+}
+
+form .rating label i:last-child {
+	display: none;
+}
+
+form .rating input:is(:hover, :checked) ~ label i:last-child {
+	display: block;
+}
+
+form .rating input:is(:hover, :checked) ~ label i:first-child {
+	display: none;
 }
 
 form.search {
@@ -602,7 +630,8 @@ form.search input[type="submit"] {
 }
 
 .pagination a.active {
-	background-color: var(--darkgrey);
+	color: var(--white);
+	background-color: var(--blue);
 }
 
 .pagination a:hover:not(.active) {
@@ -893,6 +922,10 @@ input[type="checkbox"]:checked + .modal {
 	height: 2em;
 }
 
+.user-link:first-child {
+	padding-top: 0;
+}
+
 .user-link.seperator:not(:last-child) {
 	border-bottom: 1px solid var(--darkgrey);
 }
@@ -914,9 +947,15 @@ input[type="checkbox"]:checked + .modal {
 	gap: 0 10px;
 }
 
+.tags {
+	display: flex;
+	flex-flow: row wrap;
+}
+
 .tags span {
 	padding: 4px 12px;
 	margin-right: 5px;
+	margin-bottom: 7px;
 	border-radius: 12px;
 	background-color: var(--lightgrey);
 }
@@ -928,11 +967,6 @@ input[type="checkbox"]:checked + .modal {
 
 .dropdown.right {
 	float: right;
-}
-
-.dropdown .dropdown-button {
-	cursor: pointer;
-	font-weight: 900;
 }
 
 .dropdown .dropdown-content {
@@ -961,9 +995,13 @@ input[type="checkbox"]:checked + .modal {
 	display: block;
 }
 
+.rating i {
+	color: gold;
+}
+
 footer {
 	padding: 10px;
-	background-color: var(--colour4);
+	background-color: var(--greyblue);
 	color: white;
 	text-align: center;
 }
@@ -1006,7 +1044,7 @@ footer {
 		display: none;
 		position: absolute;
 		right: 0;
-		background-color: var(--colour1);
+		background-color: var(--darkblue);
 		z-index: 1;
 		transition: 0.1s;
 	}

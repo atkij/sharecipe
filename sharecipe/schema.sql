@@ -41,6 +41,15 @@ CREATE TABLE recipe (
 	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+CREATE TABLE rating (
+	user_id INTEGER NOT NULL,
+	recipe_id INTEGER NOT NULL,
+	rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
+	FOREIGN KEY (recipe_id) REFERENCES recipe (recipe_id) ON UPDATE CASCADE ON DELETE CASCADE,
+	PRIMARY KEY (user_id, recipe_id)
+);
+
 CREATE TABLE post (
 	post_id INTEGER NOT NULL PRIMARY KEY,
 	user_id INTEGER NOT NULL,

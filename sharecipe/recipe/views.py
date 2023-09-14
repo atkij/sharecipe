@@ -6,7 +6,7 @@ import re
 import uuid
 
 from sharecipe.db import get_db
-from sharecipe.forms import RecipeForm, PhotoForm, DeleteForm
+from sharecipe.forms import RecipeForm, RateForm, PhotoForm, DeleteForm
 from sharecipe.util import login_required, resize_image
 
 from . import recipe_blueprint as bp
@@ -33,23 +33,56 @@ def index():
 def view(recipe_id):
     upload_photo_form = PhotoForm()
     delete_photo_form = DeleteForm()
+    rate_form = RateForm()
     delete_form = DeleteForm()
 
     db = get_db()
 
     recipe = db.execute(
-            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE recipe_id = ?',
+            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE recipe.recipe_id = ?',
             (recipe_id,)
             ).fetchone()
 
+    recipe = dict(recipe)
+
+    recipe.update(db.execute(
+            'SELECT AVG(rating.rating) AS rating, COUNT(*) AS rating_count FROM rating WHERE rating.recipe_id = ?',
+            (recipe_id,)
+            ).fetchone())
+
     if recipe is None:
         abort(404)
-
+    
     ingredients = recipe['ingredients'].split('\r\n')
     method = [x.split('\n') for x in recipe['method'].split('\r\n\r\n')]
     tags = list(filter(None, (recipe['tags'] or '').split(',')))
 
-    return render_template('recipe/view.html', recipe=recipe, ingredients=ingredients, method=method, tags=tags, delete_form=delete_form, upload_photo_form=upload_photo_form, delete_photo_form=delete_photo_form)
+    return render_template('recipe/view.html', recipe=recipe, ingredients=ingredients, method=method, tags=tags, delete_form=delete_form, upload_photo_form=upload_photo_form, rate_form=rate_form, delete_photo_form=delete_photo_form)
+
+@bp.route('/<int:recipe_id>/rate', methods=('GET', 'POST'))
+@login_required
+def rate(recipe_id):
+    form = RateForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        db = get_db()
+
+        rated = db.execute('SELECT EXISTS(SELECT 1 FROM rating WHERE user_id = ? AND recipe_id = ?)', (g.user['user_id'], recipe_id)).fetchone()[0]
+
+        if rated:
+            db.execute(
+                    'UPDATE rating SET rating = ? WHERE user_id = ? AND recipe_id = ?',
+                    (form.rating.data, g.user['user_id'], recipe_id)
+                    )
+        else:
+            db.execute(
+                    'INSERT INTO rating (user_id, recipe_id, rating) VALUES (?, ?, ?)',
+                    (g.user['user_id'], recipe_id, form.rating.data)
+                    )
+
+        db.commit()
+
+    return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
 @bp.route('/search')
 def search():
@@ -275,63 +308,3 @@ def delete_photo(recipe_id):
         flash('Unable to delete photo.', 'error')
 
     return redirect(url_for('recipe.view', recipe_id=recipe_id))
-
-# change empty fields to None and remove return codes
-def process(original):
-    data = dict.fromkeys(('title', 'description', 'ingredients', 'method', 'time', 'difficulty', 'servings', 'vegetarian', 'tags', 'method', 'ingredients'), '')
-    data.update({key: value.strip().replace('\r', '') for key, value in original.items()})
-
-    data['tags'] = None if not data['tags'] else re.sub('[^a-z,]', '', data['tags'].lower())
-    data['vegetarian'] = True if data['vegetarian'] else False
-
-    return data
-
-# validate data
-def validate(data, error):
-    if not data['title']:
-        error['title'] = 'Title is required.'
-    elif len(data['title']) > 100:
-        error['title'] = 'Title cannot be more than 100 characters.'
-    
-    if not data['description']:
-        pass
-    elif len(data['description']) > 200:
-        error['description'] = 'Description cannot be more than 400 characters.'
-    
-    if not data['ingredients']:
-        error['ingredients'] = 'Ingredients are required.'
-    elif len(data['ingredients']) > 1000:
-        error['ingredients'] = 'Ingredients cannot be more than 1000 characters.'
-
-    if not data['method']:
-        error['method'] = 'Method is required.'
-    elif len(data['method']) > 4000:
-        error['method'] = 'Method cannot be more than 4000 characters.'
-    
-    if not data['time']:
-        pass
-    elif not data['time'].isnumeric():
-        error['time'] = 'Time must be a number.'
-    elif int(data['time']) <= 0:
-        error['time'] = 'Time must be greater than 0.'
-
-    if not data['difficulty']:
-        pass
-    elif not data['difficulty'].isnumeric():
-        error['difficulty'] = 'Difficulty must be a number.'
-    elif int(data['difficulty']) < 1 or int(data['difficulty']) > 3:
-        error['difficulty'] = 'Difficulty must be between 1 and 3.'
-
-    if not data['servings']:
-        pass
-    elif not data['servings'].isnumeric():
-        error['servings'] = 'Servings must be a number.'
-    elif int(data['servings']) <= 0:
-        error['servings'] = 'Servings must be greater than 0.'
-    
-    if not data['tags']:
-        pass
-    elif len(data['tags']) > 100:
-        error['tags'] = 'Tags cannot be more than 100 characters.'
-
-    return error

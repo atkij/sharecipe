@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import modal, profile_pic, render_form, user_link %}
+{% from 'macros.html' import help, modal, profile_pic, render_form, user_link %}
 {% block title %}{{ recipe['title'] }}{% endblock %}
 
 {% block heading %}
 {{ super() }}
 {% if g.user and g.user['user_id'] == recipe['user_id'] %}
 <div class="dropdown right">
-	<button class="dropdown-button button round light">&#xFE19;</button>
+	<button class="dropdown-button button round light"><i class="bi bi-three-dots-vertical"></i></button>
 	<div class="dropdown-content">
 		<a href="{{ url_for('recipe.update', recipe_id=recipe['recipe_id']) }}" class="button light">Update</a>
 		<a href="#" data-modal="upload-photo" class="modal-open button light">{{ 'Change photo' if recipe['photo'] else 'Add photo' }}</a>
@@ -36,12 +36,52 @@
 {{ render_form(delete_form, 'Delete Recipe', action=url_for('recipe.delete', recipe_id=recipe['recipe_id'])) }}
 {% endcall %}
 
+{% elif g.user %}
+
+{% call modal('rate', title='Rate Recipe') %}
+<form action="{{ url_for('recipe.rate', recipe_id=recipe['recipe_id']) }}" method="post">
+	{{ rate_form.csrf_token }}
+	<div class="rating">
+		{% for item in rate_form.rating|reverse %}
+		{{ item()|safe }}
+		<label for="{{ item.id }}"><i class="bi bi-star"></i><i class="bi bi-star-fill"></i></label>
+		{% endfor %}
+	</div>
+	<input type="submit" value="Rate Recipe">
+</form>
+{% endcall %}
+
 {% endif %}
 
 <div class="recipe">
 <div class="recipe-details">
 	{{ user_link(recipe, seperator=False) }}
 
+	<div class="recipe-info rating">
+		{% if recipe['rating'] %}
+		<span>{% for i in range(1, 6) %}
+		{% if recipe['rating']|float >= i %}
+		<i class="bi bi-star-fill"></i>
+		{% elif recipe['rating']|float >= (i - 0.5) %}
+		<i class="bi bi-star-half"></i>
+		{% else %}
+		<i class="bi bi-star"></i>
+		{% endif %}
+		{% endfor %}
+		({{ recipe['rating']|round(1) }})
+		</span>
+		{% endif %}
+		<span>
+			{% if recipe['rating_count'] == 1 %}
+			{{ recipe['rating_count'] ~ ' rating' }}
+			{% elif recipe['rating_count'] %}
+			{{ recipe['rating_count'] ~ ' ratings' }}
+			{% else %}
+			No ratings
+			{% endif %}
+		</span>
+		{% if g.user and g.user['user_id'] != recipe['user_id'] %}<span><a href="#" data-modal="rate" class="modal-open">Rate</a></span>{% endif %}
+	</div>
 	<div class="recipe-info">
 	<span>Serves {{ recipe['servings'] }}</span>
 	<span>{{ recipe['time'] }} minutes</span>
@@ -50,9 +90,11 @@
 	</div>
 
 	{% if recipe['photo'] %}
-	<div class="image-container">
+	<div class="image-container recipe-info">
 		<img src="{{ url_for('upload', filename=recipe['photo']) }}">
 	</div>
+	{% else %}
+	<hr class="recipe-info">
 	{% endif %}
 
 	<div class="recipe-info"><span>{{ recipe['description'] }}</span></div>

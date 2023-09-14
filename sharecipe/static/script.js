@@ -32,9 +32,14 @@ function registerTabView(tabView) {
 	}
 }
 
-function resizeTextarea() {
-	this.style.height = 0;
-	this.style.height = this.scrollHeight + "px";
+function registerTextarea(textarea) {
+	textarea.style.resize = "none";
+	textarea.style.height = textarea.scrollHeight + "px";
+	textarea.style.overflowY = "hidden";
+	textarea.addEventListener("input", function() {
+		textarea.style.height = 0;
+		textarea.style.height = textarea.scrollHeight + "px";
+	});
 }
 
 (function() {
@@ -55,9 +60,6 @@ function resizeTextarea() {
 
 	let textareas = document.getElementsByTagName("textarea");
 	for (let i = 0; i < textareas.length; i++) {
-		textareas[i].style.resize = "none";
-		textareas[i].style.height = textareas[i].scrollHeight + "px";
-		textareas[i].style.overflowY = "hidden";
-		textareas[i].addEventListener("input", resizeTextarea);
+		registerTextarea(textareas[i]);
 	}
 })();
