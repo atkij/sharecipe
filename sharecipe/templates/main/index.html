@@ -5,6 +5,8 @@
 {% block content %}
 {% if g.user %}
 <p>Welcome {{ g.user|name }}</p>
+{% else %}
+<p>Welcome to Sharecipe!  To get started, <a href="{{ url_for('auth.register') }}">register</a> or <a href="{{ url_for('auth.login') }}">sign in</a>.</p>
 {% endif %}
 
 <section>

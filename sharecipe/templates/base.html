@@ -13,7 +13,8 @@
 		<div class="wrapper">
 			<header>
 				{% block header %}
-				<h1><a href="{{ url_for('index') }}">Sharecipe</a></h1>
+				{#<h1 class="title"><a href="{{ url_for('index') }}">Sharecipe</a></h1>#}
+				<a href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='header.png') }}"></a>
 				{% endblock %}
 			</header>
 
@@ -25,6 +26,7 @@
 					<li><a href="{{ url_for('index') }}">Home</a></li>
 					<li><a href="{{ url_for('recipe.index') }}">Recipes</a></li>
 					{#<li><a href="{{ url_for('social.index') }}">Social</a></li>#}
+					<li><a href="{{ url_for('main.about') }}">About</a></li>
 					{% if g.user %}
 					<li class="nav-dropdown right">
 						<button>Account</button>
@@ -48,7 +50,7 @@
 				{{ alert(message, class=category) }}
 				{% endfor %}
 				{% block heading %}
-				<h1>{{ self.title() }}</h1>
+				<h1 class="title">{{ self.title() }}</h1>
 				{% endblock %}
 				<section>{% block content %}{% endblock %}</section>
 				{% endblock %}

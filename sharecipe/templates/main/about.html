@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import profile_pic, recipe_scroll, user_link %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<h2>What is Sharecipe?</h2>
+<p>Sharecipe is an online recipe sharing platform for everyone.  Our active chefs post recipes regularly, ensuring you can find every recipe to suit your need, but you can also post your own recipes to share them with your friends and family.  To get started, <a href="{{ url_for('auth.register') }}">register</a> or <a href="{{ url_for('auth.login') }}">sign in</a> if you already have an account.</p>
+<h2>How to use Sharecipe</h2>
+<p>To get started, why don't you <a href="{{ url_for('auth.register') }}">register</a> for an account?  Now you'll be able to populate your profile page, add profile picture, follow your favourite chefs, rate other recipes and start creating your own recipes.</p>
+<p>To find recipes, navigate to the <a href="{{ url_for('recipe.index')}}">recipes</a> page and enter search keywords to find a recipe.  Recipes are sorted into three difficulties &mdash; easy, medium and hard.  Recipes that are vegetarian will have a green 'v' next to their details.</p>
+<p>Once you see a recipe that you like, click on the title to view the method and ingredients.  Typically, recipes will have a description and photo too.</p>
+<p>After you have made that recipe, why not rate it?  To rate it, there will be a rate button just under the name of the chef who created the recipe.  Next, rate the recipe out of five as truthfully as possible and click the 'Rate Recipe' button to submit your rating.</p>
+<p>If you enjoyed that recipe, why not follow the chef to see more of their recipes and give them more publicity.  You can find all of Sharecipe's top chefs on the <a href="{{ url_for('index') }}">home page</a>.</p>
+{% endblock %}

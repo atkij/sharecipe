@@ -28,6 +28,8 @@ def profile():
                 )
         db.commit()
 
+        flash('Profile updated successfully.', 'success')
+
         return redirect(url_for('account.index'))
 
     return render_template('account/profile.html',
@@ -102,6 +104,7 @@ def password():
         db.commit()
 
         flash('Password updated successfully.', 'success')
+
         return redirect(url_for('account.index'))
 
     return render_template('account/password.html', form=form)
