@@ -64,6 +64,10 @@ An online recipe sharing website
     	location / {
     		try_files $uri @proxy_to_app;
     	}
+
+        location /uploads {
+            alias /home/<user>/sharecipe-deploy/venv/var/sharecipe-instance/uploads;
+        }
     
     	location @proxy_to_app {
     		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -79,5 +83,6 @@ An online recipe sharing website
     	}
     }
     ```
-5. Enable the service with `systemctl enable --now sharecipe.service` and restart nginx with `systemctl restart nginx`.
-6. View website at [locahost](localhost).
+5. Link the file in `sites-available` to `sites-enabled` with `ln -s /etc/nginx/sites-available/sharecipe /etc/nginx/sites-enabled/`
+6. Enable the service with `systemctl enable --now sharecipe.service` and restart nginx with `systemctl restart nginx`.
+7. View website at [locahost](localhost).
