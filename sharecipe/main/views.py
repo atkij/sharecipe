@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, send_from_directory
 
 from sharecipe.db import get_db
 
@@ -22,9 +22,4 @@ def index():
 
 @bp.route('/about')
 def about():
-    db = get_db()
-
-    user_count = db.execute('SELECT COUNT(*) FROM user;').fetchone()[0]
-    recipe_count = db.execute('SELECT COUNT(*) FROM recipe;').fetchone()[0]
-
-    return render_template('main/about.html', user_count=user_count, recipe_count=recipe_count)
+    return render_template('main/about.html')

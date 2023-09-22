@@ -2,8 +2,8 @@ import os
 import tempfile
 
 import pytest
-from website import create_app
-from website.db import get_db, init_db
+from sharecipe import create_app
+from sharecipe.db import get_db, init_db
 
 with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
     _data_sql = f.read().decode('utf-8')
@@ -14,6 +14,7 @@ def app():
 
     app = create_app({
         'TESTING': True,
+        'WTF_CSRF_ENABLED': False,
         'DATABASE': db_path,
         })
 
@@ -33,3 +34,20 @@ def client(app):
 @pytest.fixture
 def runner(app):
     return app.test_cli_runner()
+
+class AuthActions(object):
+    def __init__(self, client):
+        self._client = client
+
+    def login(self, username='test', password='test'):
+        return self._client.post(
+                '/auth/login',
+                data={'username': username, 'password': password}
+                )
+
+    def logout(self):
+        return self._client.get('/auth/logout')
+
+@pytest.fixture
+def auth(client):
+    return AuthActions(client)

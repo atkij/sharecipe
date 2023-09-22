@@ -39,20 +39,20 @@ def view(recipe_id):
     db = get_db()
 
     recipe = db.execute(
-            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE recipe.recipe_id = ?',
+            'SELECT recipe.*, user.*, AVG(rating.rating) AS rating, COUNT(rating.rating) AS rating_count FROM recipe INNER JOIN user ON recipe.user_id = user.user_id LEFT JOIN rating ON recipe.recipe_id = rating.recipe_id WHERE recipe.recipe_id = ?',
             (recipe_id,)
             ).fetchone()
 
-    recipe = dict(recipe)
+    #recipe = dict(recipe)
 
-    recipe.update(db.execute(
-            'SELECT AVG(rating.rating) AS rating, COUNT(*) AS rating_count FROM rating WHERE rating.recipe_id = ?',
-            (recipe_id,)
-            ).fetchone())
+    #recipe.update(db.execute(
+    #        'SELECT AVG(rating.rating) AS rating, COUNT(*) AS rating_count FROM rating WHERE rating.recipe_id = ?',
+    #        (recipe_id,)
+    #        ).fetchone())
 
-    if recipe is None:
+    if recipe['title'] is None:
         abort(404)
-    
+
     ingredients = recipe['ingredients'].split('\r\n')
     method = [x.split('\n') for x in recipe['method'].split('\r\n\r\n')]
     tags = list(filter(None, (recipe['tags'] or '').split(',')))
@@ -66,6 +66,11 @@ def rate(recipe_id):
 
     if request.method == 'POST' and form.validate():
         db = get_db()
+
+        author_id = db.execute('SELECT user_id FROM recipe WHERE recipe_id = ?', (recipe_id,)).fetchone()[0]
+        if g.user['user_id'] == author_id:
+            flash('You cannot rate your own recipe.', 'error')
+            return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
         rated = db.execute('SELECT EXISTS(SELECT 1 FROM rating WHERE user_id = ? AND recipe_id = ?)', (g.user['user_id'], recipe_id)).fetchone()[0]
 
@@ -109,7 +114,7 @@ def search():
 
         db = get_db()
         
-        search = ' + '.join(['(tags LIKE ?) + (title LIKE ?) + (description LIKE ?)'] * len(keywords))
+        search = ' + '.join(['(tags IS NOT NULL AND tags LIKE ?) + (title LIKE ?) + (description IS NOT NULL AND description LIKE ?)'] * len(keywords))
         query = f'SELECT recipe.*, user.*, ({search}) AS best_match FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE best_match > 0 AND (vegetarian = ? OR vegetarian = ?) AND (recipe.user_id = ? OR ?) ORDER BY best_match DESC LIMIT ? OFFSET ?'
 
         keywords = [i for i in keywords for _ in (0, 1, 2)]
@@ -136,6 +141,7 @@ def latest():
     vegetarian = request.args.get('vegetarian') == 'vegetarian'
     user_id = request.args.get('user_id')
     username = None
+    print(vegetarian)
 
     count = int(db.execute(
             'SELECT COUNT(*) FROM recipe WHERE recipe.user_id = ? OR ?',
@@ -147,7 +153,7 @@ def latest():
     pages = ceil(count / limit)
 
     recipes = db.execute(
-            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE (vegetarian = ? OR vegetarian = ?) AND recipe.user_id = ? OR ? ORDER BY created DESC LIMIT ? OFFSET ?',
+            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE (vegetarian = ? OR vegetarian = ?) AND (recipe.user_id = ? OR ?) ORDER BY created DESC LIMIT ? OFFSET ?',
             (vegetarian, vegetarian + 1, user_id, not user_id, limit, ((page - 1) * limit))
             ).fetchall()
 
@@ -222,6 +228,9 @@ def delete(recipe_id):
         abort(403)
 
     if request.method == 'POST' and form.validate():
+        if recipe['photo'] is not None:
+            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe['photo']))
+
         db.execute(
                 'DELETE FROM recipe WHERE recipe_id = ?',
                 (recipe_id,)
@@ -251,10 +260,13 @@ def upload_photo(recipe_id):
         abort(403)
 
     if request.method == 'POST' and form.validate():
+        if recipe['photo'] is not None:
+            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe['photo']))
+
         photo = form.photo.data
         filename = str(uuid.uuid4()) + '.' + photo.filename.split('.')[-1]
 
-        photo = resize_image(photo, 1024)
+        photo = resize_image(photo.stream, 1024)
         if photo is None:
             flash('Unsupported image format.', 'error')
             return redirect(url_for('recipe.view', recipe_id=recipe_id))
@@ -269,7 +281,7 @@ def upload_photo(recipe_id):
 
         flash('Photo uploaded successfully.', 'success')
     else:
-        for _, error in form.errors:
+        for error in form.photo.errors:
             flash(error, 'error')
 
     return redirect(url_for('recipe.view', recipe_id=recipe_id))
@@ -291,9 +303,8 @@ def delete_photo(recipe_id):
         abort(403)
 
     if request.method == 'POST' and form.validate():
-        filename = os.path.join(current_app.config['UPLOAD_FOLDER'], recipe['photo'])
-        if os.path.exists(filename):
-            os.remove(filename)
+        if recipe['photo'] is not None:
+            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe['photo']))
 
             db.execute(
                     'UPDATE recipe SET photo = NULL WHERE recipe_id = ?',
@@ -301,7 +312,7 @@ def delete_photo(recipe_id):
                     )
             db.commit()
 
-            flash('Photo deleted successfull.', 'success')
+            flash('Photo deleted successfully.', 'success')
         else:
             flash('No photo to delete.', 'error')
     else:

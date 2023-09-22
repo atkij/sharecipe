@@ -47,7 +47,7 @@
 {%- endmacro %}
 
 {% macro profile_pic(user, size=None) -%}
-<img class="profile-pic {{ size }}" src="{{ url_for('upload', filename=user['picture']) if user['picture'] else url_for('static', filename='profile.svg') }}">
+<img class="profile-pic {{ size if size else '' }}" src="{{ url_for('upload', filename=user['picture']) if user['picture'] else url_for('static', filename='profile.svg') }}">
 {%- endmacro %}
 
 {% macro user_link(user, seperator=True) -%}

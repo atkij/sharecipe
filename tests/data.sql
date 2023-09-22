@@ -1,2 +1,7 @@
-INSERT INTO user (username, password) VALUES ('test', 'scrypt:16384:8:1$f83f938bdb26099a9ae55f169c8932d0$8889d5227f2399a5a90e9b499191f9205d1b3a030e16aa2df34ae17e023bfaeb150d57232042513c1881709cb1ad716d3a3903f07606347a60465da2256ace5c'), ('other', 'scrypt:16384:8:1$90ac21eb42859d2513e72e99dc2c3697$ec740907f6b632efc836786fc283931a4f502c8e887bcc449db1c3cba638cc360b3fbf7b484af3ac6d319589d9f13649408073cd55ed0440ee0c1a5a2affbcce');
+INSERT INTO user (username, password, name, bio) VALUES ('test', 'scrypt:16384:8:1$8986dc0c476fcb2cf74f50f3a1958df5$1e0f3e807a5b590c8f59a2565316ffc4f64993f636ceaafdd9a3992c9502f41ce8cd040e40af8e11c9a0b8ccb3d4de1b6f2950a8121b7fcf31217e7cc9e0fe55', 'Test', 'This is the test account.');
+INSERT INTO user (username, password, name, bio) VALUES ('other', 'scrypt:16384:8:1$e73fdda4089da790062069278d3059d7$baf2bf740739bec38ae35f1b5b9490dfee5fbf368dca4c6bb245b0e26275878cf57989cfec2a8dcaa0d4360834982e023ad8444f3ac4c3bdea5330bc97a2be67', 'Other', 'This is the other account.');
 
+INSERT INTO follower (user_id, follower_id) VALUES (2, 1);
+
+INSERT INTO recipe (user_id, title, ingredients, method, vegetarian) VALUES (1, 'Recipe 1', 'Ingredients', 'Method', 1);
+INSERT INTO recipe (user_id, title, ingredients, method, vegetarian) VALUES (2, 'Recipe 2', 'Ingredients', 'Method', 0);

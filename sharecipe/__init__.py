@@ -1,8 +1,9 @@
 import os
-from flask import Flask, render_template, send_from_directory, session, url_for, g
-from datetime import datetime
+from flask import Flask, current_app, render_template, send_from_directory, session, url_for, g
+from werkzeug.exceptions import HTTPException
 
 from sharecipe.db import get_db
+from sharecipe.util import name_filter
 
 def create_app(test_config=None):
     # create and configure the app
@@ -24,20 +25,15 @@ def create_app(test_config=None):
     except OSError:
         pass
     
-    # register utilities
-    register_utils(app)
-
+    
     # register blueprints
     register_blueprints(app)
     
     # initialize extensions
     initialize_extensions(app)
 
-    # configure logging
-    #configure_logging(app)
-
-    # register error handlers
-    register_error_handlers(app)
+    app.add_template_filter(name_filter, name='name')
+    app.register_error_handler(HTTPException, error)
     
     return app
 
@@ -45,95 +41,25 @@ def register_blueprints(app):
     from sharecipe.account import account_blueprint
     from sharecipe.auth import auth_blueprint
     from sharecipe.main import main_blueprint
-    from sharecipe.social import social_blueprint
     from sharecipe.recipe import recipe_blueprint
     from sharecipe.user import user_blueprint
     
     app.register_blueprint(account_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(main_blueprint)
-    app.register_blueprint(social_blueprint)
     app.register_blueprint(recipe_blueprint)
     app.register_blueprint(user_blueprint)
 
     app.add_url_rule('/', endpoint='index')
+    app.add_url_rule('/uploads/<path:filename>', endpoint='upload', view_func=upload)
 
 def initialize_extensions(app):
     from sharecipe import db
     db.init_app(app)
 
-def register_utils(app):
-    @app.before_request
-    def load_user():
-        user_id = session.get('user_id')
+def upload(filename):
+    return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
 
-        if user_id is None:
-            g.user = None
-        else:
-            g.user = get_db().execute(
-                    'SELECT user.* FROM user WHERE user.user_id = ?', (user_id,)
-                    ).fetchone()
+def error(e):
+    return render_template('error.html', e=e), e.code
 
-    @app.route('/uploads/<path:filename>')
-    def upload(filename):
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-    @app.template_filter('strftime')
-    def format_time_filter(s, f):
-        return datetime.fromisoformat(s).strftime(f)
-
-    @app.template_filter('name')
-    def name(user):
-        return user['name'] if user['name'] else user['username']
-
-    @app.template_test('path')
-    def path_exists(path):
-        return os.path.exists(path)
-
-    @app.template_global('profile_pic_uri')
-    def profile_pic_filename(user_id):
-        filename = os.path.join('profile', str(user_id) + '.jpg')
-        if os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], filename)):
-            return url_for('upload', filename=filename)
-        else:
-            return url_for('static', filename='profile.svg')
-
-    @app.template_global('path')
-    def join_path(*filenames):
-        return os.path.join(*filenames)
-
-def register_error_handlers(app):
-    @app.errorhandler(400)
-    def bad_request(e):
-        return render_template('400.html'), 400
-
-    @app.errorhandler(403)
-    def forbidden(e):
-        return render_template('403.html'), 403
-
-    @app.errorhandler(404)
-    def page_not_found(e):
-        return render_template('404.html'), 404
-
-    @app.errorhandler(405)
-    def method_not_allowed(e):
-        return render_template('405.html'), 405
-
-    @app.errorhandler(500)
-    def server_error(e):
-        return render_template('500.html'), 500
-
-def configure_logging(app):
-    import logging
-    from flask.logging import default_handler
-    from logging.handlers import FileHandler
-
-    #app.logger.removeHandler(default_handler)
-
-    file_handler = FileHandler('website.log')
-    file_handler.setLevel(logging.INFO)
-
-    file_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(filename)s: %(lineno)d]')
-    file_handler.setFormatter(file_formatter)
-
-    app.logger.addHandler(file_handler)

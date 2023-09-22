@@ -38,16 +38,33 @@ def profile():
             delete_picture_form=DeletePictureForm(),
             )
 
+def _delete_picture():
+    if g.user['picture'] is None:
+        return
+
+    filename = os.path.join(current_app.config['UPLOAD_FOLDER'] , g.user['picture'])
+    if os.path.exists(filename):
+        os.remove(filename)
+
+    db = get_db()
+    db.execute(
+            'UPDATE user SET picture = NULL WHERE user_id = ?',
+            (g.user['user_id'],)
+            )
+    db.commit()
+
 @bp.route('/picture/upload', methods=('GET', 'POST'))
 @login_required
 def upload_picture():
     form = UploadPictureForm()
 
     if request.method == 'POST' and form.validate():
+        _delete_picture()
+
         picture = form.picture.data
         filename = str(uuid.uuid4()) + '.' + picture.filename.split('.')[-1]
 
-        picture = resize_image(picture, 256)
+        picture = resize_image(picture.stream, 256)
         if picture is None:
             flash('Unsupported image format.', 'error')
             return redirect(url_for('account.index'))
@@ -63,7 +80,7 @@ def upload_picture():
 
         flash('Profile picture updated successfully.', 'success')
     else:
-        for _,error in form.errors:
+        for error in form.picture.errors:
             flash(error, 'error')
     
     return redirect(url_for('account.index'))
@@ -73,17 +90,8 @@ def upload_picture():
 def delete_picture():
     form = DeletePictureForm(request.form)
 
-    if request.method == 'POST' and form.validate():
-        filename = os.path.join(current_app.config['UPLOAD_FOLDER'], g.user['picture'])
-        if os.path.exists(filename):
-            os.remove(filename)
-
-        db = get_db()
-        db.execute(
-            'UPDATE user SET picture = NULL WHERE user_id = ?',
-            (g.user['user_id'],)
-            )
-        db.commit()
+    if request.method == 'POST' and g.user['picture'] and form.validate():
+        _delete_picture()
 
         flash('Profile picture deleted successfully.', 'success')
 
@@ -115,6 +123,8 @@ def delete():
     form = DeleteAccountForm(request.form)
 
     if request.method == 'POST' and form.validate():
+        _delete_picture()
+
         db = get_db()
         db.execute('DELETE FROM user WHERE user_id = ?', (g.user['user_id'],))
         db.commit()

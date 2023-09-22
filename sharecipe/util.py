@@ -1,11 +1,10 @@
 import functools
 import hashlib
-import imghdr
 from PIL import Image, UnidentifiedImageError
 import os
 import time
 
-from flask import abort, current_app, g, redirect, url_for
+from flask import abort, current_app, g, redirect, session, url_for
 
 def _hash_internal(password, salt, n=16384, r=8, p=1):
     maxmem = 132 * n * r * p
@@ -29,6 +28,9 @@ def check_password_hash(password_hash, password):
 
     return hashval == _hash_internal(password, salt, n=n, r=r, p=p)[0]
 
+def name_filter(user):
+    return user['name'] if user['name'] else user['username']
+
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(*args, **kwargs):
@@ -37,14 +39,9 @@ def login_required(view):
         return view(*args, **kwargs)
     return wrapped_view
 
-def validate_image(stream):
-    header = stream.read(512)
-    stream.seek(0)
-    return imghdr.what(None, header) is not None
-
-def resize_image(image, size):
+def resize_image(stream, size):
     try:
-        img = Image.open(image.stream)
+        img = Image.open(stream)
 
         if img.size[0] <= size and img.size[1] <= size:
             return img
@@ -55,6 +52,3 @@ def resize_image(image, size):
             return img.resize((int((size / img.size[1]) * img.size[0]), size))
     except UnidentifiedImageError:
         return None
-
-def generate_filename():
-    return hashlib.md5(os.urandom(16)).hexdigest()

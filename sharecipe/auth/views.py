@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, request, session, url_for
+from flask import flash, g, redirect, render_template, request, session, url_for
 
 from sharecipe.db import get_db
 from sharecipe.util import check_password_hash, generate_password_hash
@@ -14,7 +14,7 @@ def register():
         db = get_db()
 
         try:
-            db.execute(
+            res = db.execute(
                     'INSERT INTO user (username, password, name, last_login) VALUES (?, ?, ?, datetime("now"))',
                     (form.username.data, generate_password_hash(form.password.data), form.name.data)
                     )
@@ -22,15 +22,10 @@ def register():
         except db.IntegrityError:
             flash(f'Username already taken.', 'error')
         else:
-            user = db.execute('SELECT * FROM user WHERE username = ?', (form.username.data,)).fetchone()
-            
-            if user is None:
-                flash('Unable to register user.  Please try again.', 'error')
-            else:
-                session.clear()
-                session['user_id'] = user['user_id']
+            session.clear()
+            session['user_id'] = res.lastrowid
                     
-                return redirect(url_for('index'))
+            return redirect(url_for('index'))
     return render_template('auth/register.html', form=form)
 
 @auth_blueprint.route('/login', methods=('GET', 'POST'))
@@ -60,4 +55,14 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+@auth_blueprint.before_app_request
+def load_user():
+    user_id = session.get('user_id')
+
+    if user_id is None:
+        g.user = None
+    else:
+        g.user = get_db().execute(
+                'SELECT user.* FROM user WHERE user.user_id = ?', (user_id,)
+                ).fetchone()
 

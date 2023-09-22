@@ -49,22 +49,3 @@ CREATE TABLE rating (
 	FOREIGN KEY (recipe_id) REFERENCES recipe (recipe_id) ON UPDATE CASCADE ON DELETE CASCADE,
 	PRIMARY KEY (user_id, recipe_id)
 );
-
-CREATE TABLE post (
-	post_id INTEGER NOT NULL PRIMARY KEY,
-	user_id INTEGER NOT NULL,
-	title TEXT NOT NULL CHECK (LENGTH(title) <= 100),
-	body TEXT NOT NULL CHECK (LENGTH(body) <= 4000),
-	created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	updated TEXT,
-	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
-/*
-CHANGES
-
- - post table (new)
- - firstname in user (new)
- - lastname in user (new)
- - bio in user (new)
-*/

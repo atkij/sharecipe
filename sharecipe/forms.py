@@ -46,7 +46,7 @@ class PasswordCheck(object):
         self.message = message
 
     def __call__(self, form, field):
-        if check_password_hash(g.user['password'], field.data):
+        if g.user is not None and check_password_hash(g.user['password'], field.data):
             return
 
         message = self.message
@@ -55,40 +55,31 @@ class PasswordCheck(object):
 
         raise ValidationError(message)
 
-def process_profile_pic(stream):
-    img = Image.open(stream).convert('RGBA')
-    w, h = img.size
-    new_img = Image.new('RGBA', img.size, 'WHITE')
-    new_img.paste(img, (0, 0), img)
-    img_crop = new_img.crop((0, 0, h if w > h else w, w if h > w else h))
-    img_resize = img_crop.resize((1024, 1024))
-    return img_resize.convert('RGB')
-
 # form when logging in to sharecipe
 class LoginForm(FlaskForm):
     username = StringField('Username', [
-        InputRequired(message='Please enter a username')
+        InputRequired(message='Username is required')
         ], description='Enter your username')
     password = PasswordField('Password', [
-        InputRequired(message='Please enter a password')
+        InputRequired(message='Password is required')
         ], description='Enter your password')
 
 # form when signing up to sharecipe
 class RegisterForm(FlaskForm):
     username = StringField('Username', [
-        InputRequired(message='Please choose a username'),
-        Length(min=3, max=36, message='Your username must be between 3 and 36 characters')
+        InputRequired(message='Username is required'),
+        Length(min=3, max=36, message='Username must be between 3 and 36 characters')
         ], description='Choose a unique username to identify your account')
     name = StringField('Name', [
         Optional(), Length(max=56,
-            message='Your name cannot be more than 56 characters')
+            message='Name must not exceed 56 characters')
         ], description='This is how you\'ll be known')
     password = PasswordField('Password', [
-        InputRequired(message='Please choose a password'),
-        Length(min=8, max=256, message='Your password must be between 8 and 256 characters.')
+        InputRequired(message='Password is required'),
+        Length(min=8, max=256, message='Password must be between 8 and 256 characters')
         ], description='Choose a strong password to protect your account')
     confirm_password = PasswordField('Confirm Password', [
-        InputRequired(message='Please confirm your password'),
+        InputRequired(message='Password confirmation is required'),
         EqualTo('password', message='Passwords must match')
         ], description='Confirm your password')
 

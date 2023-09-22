@@ -63,13 +63,10 @@ def follow(user_id):
 def unfollow(user_id):
     db = get_db()
 
-    try:
-        db.execute(
-            'DELETE FROM follower WHERE user_id = ? AND follower_id = ?',
-            (user_id, g.user['user_id'],)
-            )
-        db.commit()
-    except db.IntegrityError:
-        pass
+    db.execute(
+        'DELETE FROM follower WHERE user_id = ? AND follower_id = ?',
+        (user_id, g.user['user_id'],)
+        )
+    db.commit()
 
     return redirect(url_for('user.index', user_id=user_id))
