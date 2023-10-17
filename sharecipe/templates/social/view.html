@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% set small = True %}
+{% from 'macros.html' import modal, render_form, user_link %}
+{% block title %}{{ post['title'] }}{% endblock %}
+
+{% block heading %}
+{% if g.user and g.user['user_id'] == post['user_id'] %}
+<div class="dropdown right">
+	<button class="dropdown-button button round light"><i class="bi bi-three-dots-vertical"></i></button>
+	<div class="dropdown-content">
+		<a href="{{ url_for('social.update', post_id=post['post_id']) }}" class="button light">Update</a>
+		<a href="#" data-modal="upload-photos" class="modal-open button light">Upload photos</a>
+		<a href="#" data-modal="delete-post" class="modal-open button light error">Delete</a>
+	</div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if g.user and g.user['user_id'] == post['user_id'] %}
+
+{% call modal('upload-photos', title='Upload Photos') %}
+{{ render_form(photo_form, 'Upload Photos', action=url_for('social.upload_photos', post_id=post['post_id']), upload=True) }}
+{% endcall %}
+
+{% call modal('delete-post', title='Delete Post') %}
+<p>Are you sure you want to delete this post?</p>
+{{ render_form(delete_form, 'Delete Post', action=url_for('social.delete', post_id=post['post_id'])) }}
+{% endcall %}
+
+{% endif %}
+
+<div class="post">
+	<h1 class="title">{{ self.title() }}</h1>
+	{{ user_link(post, seperator=False) }}
+
+	<div class="post-body">
+		{{ post['body'] }}
+	</div>
+
+	{% if photos %}
+	<div class="slideshow">
+		<div class="slideshow-container">
+			{% for photo in photos %}
+			<div class="slide">
+				<div class="image-container">
+				<img data-src="{{ url_for('upload', filename=photo['photo']) }}">
+				</div>
+				{% if g.user['user_id'] == post['user_id'] %}
+				<div class="slide-action">
+					<form action="{{ url_for('social.delete_photo', post_id=post['post_id'], photo_id=photo['photo_id']) }}" method="post">
+						{{ delete_form.csrf_token }}
+						<input type="submit" value="Delete">
+					</form>
+				</div>
+				{% endif %}
+			</div>
+			{% endfor %}
+
+			<a href="#" class="previous">&#10094;</a>
+			<a href="#" class="next">&#10095;</a>
+		</div>
+	</div>
+	{% endif %}
+</div>
+{% endblock %}

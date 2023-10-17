@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import BooleanField, Field, IntegerField, PasswordField, RadioField, StringField, SubmitField, TextAreaField
-from wtforms.validators import EqualTo, InputRequired, Length, NumberRange, Optional, ValidationError
+from wtforms import BooleanField, EmailField, Field, IntegerField, MultipleFileField, PasswordField, RadioField, SelectField, SelectMultipleField, StringField, SubmitField, TextAreaField
+from wtforms.validators import Email, EqualTo, InputRequired, Length, NumberRange, Optional, ValidationError
 from wtforms.widgets import TextInput
 
 from PIL import Image
@@ -70,6 +70,11 @@ class RegisterForm(FlaskForm):
         InputRequired(message='Username is required'),
         Length(min=3, max=36, message='Username must be between 3 and 36 characters')
         ], description='Choose a unique username to identify your account')
+    email = EmailField('Email', [
+        InputRequired(message='Email address is required'),
+        Email(message='Enter a valid email address'),
+        Length(max=256, message='Email must not be more than 256 characters'),
+        ], description='Enter your email address to help recover your account if lost')
     name = StringField('Name', [
         Optional(), Length(max=56,
             message='Name must not exceed 56 characters')
@@ -89,6 +94,11 @@ class UpdateProfileForm(FlaskForm):
         Optional(),
         Length(max=56, message='Your name cannot be more than 56 characters')
         ], description='This is how you\'ll be known')
+    email = EmailField('Email', [
+        InputRequired(message='Email address is required'),
+        Email(message='Enter a valid email address'),
+        Length(max=256, message='Email must not be more than 256 characters'),
+        ], description='Enter your email address to help recover your account if lost')
     bio = TextAreaField('Bio', [
         Optional(),
         Length(max=400, message='Bio cannot exceed 400 characters')
@@ -188,6 +198,22 @@ class RateForm(FlaskForm):
     rating = RadioField('Rating', [
         InputRequired(message='Please provide a rating'),
         ], choices=[('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5')], description='Rate this recipe out of 5')
+
+class PostForm(FlaskForm):
+    title = StringField('Title', [
+        InputRequired(message='Title is required'),
+        Length(max=100, message='Title cannot be more than 100 characters'),
+        ], description='Give your post a name')
+    body = TextAreaField('Body', [
+        InputRequired(message='Body is required'),
+        Length(max=4000, message='Body cannot be more than 4000 characters'),
+        ], description='Write your message here')
+    #photos = MultipleFileField('Photos', [
+    #    ], render_kw={'accept': 'image/jpeg,image/png'}, description='Upload photos to share')
+    sharing = SelectField('Visibility', choices=[('0', 'Only You'), ('1', 'Followers'), ('2', 'Everyone')], description='Who can see your post')
+
+class MultiPhotoForm(FlaskForm):
+    photos = MultipleFileField('Photos', render_kw={'accept': 'image/jpeg,image/png'}, description='Upload photos to share')
 
 # form for deleting recipe photo and recipe (for csrf)
 class DeleteForm(FlaskForm):

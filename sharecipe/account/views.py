@@ -23,8 +23,8 @@ def profile():
     if request.method == 'POST' and form.validate():
         db = get_db()
         db.execute(
-                'UPDATE user SET name = ?, bio = ? WHERE user_id = ?',
-                (form.name.data, form.bio.data, g.user['user_id'])
+                'UPDATE user SET name = ?, email = ?, bio = ? WHERE user_id = ?',
+                (form.name.data, form.email.data, form.bio.data, g.user['user_id'])
                 )
         db.commit()
 

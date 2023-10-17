@@ -15,12 +15,12 @@ def register():
 
         try:
             res = db.execute(
-                    'INSERT INTO user (username, password, name, last_login) VALUES (?, ?, ?, datetime("now"))',
-                    (form.username.data, generate_password_hash(form.password.data), form.name.data)
+                    'INSERT INTO user (username, password, email, name, last_login) VALUES (?, ?, ?, ?, datetime("now"))',
+                    (form.username.data, generate_password_hash(form.password.data), form.email.data, form.name.data)
                     )
             db.commit()
         except db.IntegrityError:
-            flash(f'Username already taken.', 'error')
+            flash(f'Account already exists.', 'error')
         else:
             session.clear()
             session['user_id'] = res.lastrowid

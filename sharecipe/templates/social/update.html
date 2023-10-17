@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import render_form %}
+{% block title %}Update Post{% endblock %}
+
+{% block content %}
+{{ render_form(form, 'Update Post', upload=True) }}
+{% endblock %}

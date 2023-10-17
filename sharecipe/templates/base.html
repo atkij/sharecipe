@@ -37,7 +37,7 @@
 					{% block nav %}
 					<li><a href="{{ url_for('index') }}">Home</a></li>
 					<li><a href="{{ url_for('recipe.index') }}">Recipes</a></li>
-					{#<li><a href="{{ url_for('social.index') }}">Social</a></li>#}
+					<li><a href="{{ url_for('social.index') }}">Social</a></li>
 					<li><a href="{{ url_for('main.about') }}">About</a></li>
 					{% if g.user %}
 					<li class="nav-dropdown right">
@@ -56,21 +56,22 @@
 				</ul>
 			</nav>
 
+			{% for category, message in get_flashed_messages(with_categories=true) %}
+			{{ alert(message, class=category) }}
+			{% endfor %}
+			
 			<main>
 				{% block main %}
-				{% for category, message in get_flashed_messages(with_categories=true) %}
-				{{ alert(message, class=category) }}
-				{% endfor %}
 				{% block heading %}
 				<h1 class="title">{{ self.title() }}</h1>
 				{% endblock %}
-				<section>{% block content %}{% endblock %}</section>
+				<section class="{{ 'small' if small }}">{% block content %}{% endblock %}</section>
 				{% endblock %}
 			</main>
 
 			<footer>
 				{% block footer %}
-				<p>Copyright &copy; 2023 Joel Atkinson</p>
+				<p>Copyright &copy; 2023 Joel Atkinson | Version 1.0.0</p>
 				{% endblock %}
 			</footer>
 		</div>

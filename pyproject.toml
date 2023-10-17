@@ -1,9 +1,10 @@
 [project]
 name = "sharecipe"
-version = "1.1.3"
+version = "1.0.0"
 description = "An online recipe sharing website"
 readme = "README.md"
 dependencies = [
+	"email_validator",
 	"flask",
 	"Flask-WTF",
 	"gunicorn",
