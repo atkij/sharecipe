@@ -1,6 +1,8 @@
 # Sharecipe
 An online recipe sharing website
 
+Try it out now online at <https://sharecipe.eu.pythonanywhere.com/>
+
 > **Note:**
 > There are no release yet, so to get a wheel: clone the repository; create virtual environment with `python3 -m venv venv`; activate and install dependencies; execute `python3 -m build` to get wheel in `dist` folder.
 
