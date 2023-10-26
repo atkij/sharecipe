@@ -2,6 +2,10 @@
 {% from 'macros.html' import help, modal, profile_pic, render_form, user_link %}
 {% block title %}{{ recipe['title'] }}{% endblock %}
 
+{% block meta_description %}{{ recipe['description'] or recipe['title'] }}{% endblock %}
+{% block meta_image %}{% if recipe['photo'] %}{{ url_for('upload', filename=recipe['photo']) }}{% else %}{{ super() }}{% endif %}{% endblock %}
+{% block meta_type %}article{% endblock %}
+
 {% block heading %}
 {{ super() }}
 {% if g.user and g.user['user_id'] == recipe['user_id'] %}
@@ -14,6 +18,9 @@
 		<a href="#" data-modal="delete" class="modal-open button light error">Delete</a>
 	</div>
 </div>
+<button class="share button round light right" data-title="Sharecipe" data-text="Check out my {{ recipe['title'] }} recipe!" data-url="{{ config['URL'] + request.path }}"><i class="bi bi-share-fill"></i></button>
+{% else %}
+<button class="share button round light right" data-title="Sharecipe" data-text="Check out {{ recipe|name }}'s {{ recipe['title'] }} recipe!" data-url="{{ config['URL'] + request.path }}"><i class="bi bi-share-fill"></i></button>
 {% endif %}
 {% endblock %}
 

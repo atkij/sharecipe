@@ -73,3 +73,7 @@
 </form>#}
 {{ render_form(form, 'Update Recipe') }}
 {% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='recipe.js') }}"></script>
+{% endblock %}

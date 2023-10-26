@@ -18,7 +18,15 @@
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
 		<meta name="author" content="Joel Atkinson">
-		<meta name="description" content="Sharecipe is an online recipe sharing platform for everyone.">
+		<meta name="description" content="{% block meta_description %}Find and share your recipes on Sharecipe.{% endblock %}">
+		{% block meta_ogp %}
+		<meta property="og:title" content="{% block meta_title %}{{ self.title() }}{% endblock %}">
+		<meta property="og:url" content="{{ config['URL'] }}{{ request.path }}">
+		<meta property="og:description" content="{{ self.meta_description() }}">
+		<meta property="og:image" content="{{ config['URL'] }}{% block meta_image %}{{ url_for('static', filename='header.png') }}{% endblock %}">
+		<meta property="og:type" content="{% block meta_type %}website{% endblock %}">
+		<meta property="og:locale" content="en_GB">
+		{% endblock %}
 		{% endblock %}
 	</head>
 	<body>
@@ -71,12 +79,13 @@
 
 			<footer>
 				{% block footer %}
-				<p>Copyright &copy; 2023 Joel Atkinson | Version 1.0.0</p>
+				<p>Copyright &copy; 2023 Joel Atkinson | Version {{ config['VERSION'] }}</p>
 				{% endblock %}
 			</footer>
 		</div>
 		
 		<script src="{{ url_for('static', filename='script.js') }}"></script>
+		{% block scripts %}{% endblock %}
 	</body>
 </html>
 

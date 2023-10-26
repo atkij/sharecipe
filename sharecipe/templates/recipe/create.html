@@ -5,3 +5,7 @@
 {% block content %}
 {{ render_form(form, 'Create Recipe') }}
 {% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='recipe.js') }}"></script>
+{% endblock %}

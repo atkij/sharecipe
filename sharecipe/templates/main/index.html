@@ -2,6 +2,8 @@
 {% from 'macros.html' import profile_pic, recipe_scroll, user_link %}
 {% block title %}Home{% endblock %}
 
+{% block meta_title %}Sharecipe{% endblock %}
+
 {% block content %}
 {% if g.user %}
 <p>Welcome {{ g.user|name }}</p>

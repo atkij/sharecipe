@@ -1,4 +1,5 @@
 import os
+import importlib.metadata
 from flask import Flask, current_app, render_template, send_from_directory, session, url_for, g
 from werkzeug.exceptions import HTTPException
 
@@ -12,6 +13,8 @@ def create_app(test_config=None):
             SECRET_KEY='dev',
             DATABASE=os.path.join(app.instance_path, 'sharecipe.db'),
             UPLOAD_FOLDER=os.path.join(app.instance_path, 'uploads'),
+            URL='',
+            VERSION=importlib.metadata.version('sharecipe'),
             )
 
     if test_config is None:

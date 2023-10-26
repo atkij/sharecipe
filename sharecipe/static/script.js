@@ -42,6 +42,22 @@ function registerTextarea(textarea) {
 	});
 }
 
+function registerShareBtn(btn) {
+	const data = {
+		title: btn.getAttribute("data-tite"),
+		text: btn.getAttribute("data-text"),
+		url: btn.getAttribute("data-url"),
+	}
+
+	btn.addEventListener("click", function() {
+		if (navigator.share) {
+			navigator.share(data);
+		} else {
+			console.log("Unable to share resource.");
+		}
+	});
+}
+
 function Slideshow(slideshow) {
 	this.slideshow = slideshow;
 	this.slides = this.slideshow.getElementsByClassName("slide");
@@ -119,5 +135,10 @@ function registerSlideshow(slideshow) {
 	let slideshows = document.getElementsByClassName("slideshow");
 	for (let i = 0; i < slideshows.length; i++) {
 		registerSlideshow(slideshows[i]);
+	}
+
+	let shareBtns = document.getElementsByClassName("share");
+	for (let i = 0; i < shareBtns.length; i++) {
+		registerShareBtn(shareBtns[i]);
 	}
 })();

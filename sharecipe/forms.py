@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import BooleanField, EmailField, Field, IntegerField, MultipleFileField, PasswordField, RadioField, SelectField, SelectMultipleField, StringField, SubmitField, TextAreaField
-from wtforms.validators import Email, EqualTo, InputRequired, Length, NumberRange, Optional, ValidationError
+from wtforms.validators import Email, EqualTo, InputRequired, Length, NumberRange, Optional, Regexp, ValidationError
 from wtforms.widgets import TextInput
 
 from PIL import Image
@@ -68,7 +68,8 @@ class LoginForm(FlaskForm):
 class RegisterForm(FlaskForm):
     username = StringField('Username', [
         InputRequired(message='Username is required'),
-        Length(min=3, max=36, message='Username must be between 3 and 36 characters')
+        Length(min=3, max=36, message='Username must be between 3 and 36 characters'),
+        Regexp('^[a-zA-Z0-9-_.]*$', message='Username can only consist of upper and lower case letters, numbers, hyphens, underscores and periods'),
         ], description='Choose a unique username to identify your account')
     email = EmailField('Email', [
         InputRequired(message='Email address is required'),

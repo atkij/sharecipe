@@ -2,6 +2,10 @@
 {% from 'macros.html' import profile_pic, user_link, recipe_scroll, tab_view, tab, tab_link, tab_seperator %}
 {% block title %}{{ user|name }}{% endblock %}
 
+{% block meta_description %}{{ user['bio'] or user['username'] }}{% endblock %}
+{% block meta_image %}{% if user['picture'] %}{{ url_for('upload', filename=user['picture']) }}{% else %}{{ super() }}{% endif %}{% endblock %}
+{% block meta_type %}profile{% endblock %}
+
 {% block heading %}
 <div class="profile-pic-left">{{ profile_pic(user) }}</div>
 <h1>{{ self.title() }}</h1>
