@@ -238,13 +238,14 @@ form div.error span::after {
 	white-space: pre;
 }
 
-form input:not(.button) {
+form input:not(.button), form select {
 	display: block;
 	order: 2;
 	width: 100%;
 	margin: 10px 0 20px 0;
 	padding: 8px;
 	border: 1px solid var(--darkgrey);
+	background-color: var(--white);
 	font-family: inherit;
 	font-size: inherit;
 	outline: none;
@@ -313,11 +314,16 @@ form input[type="checkbox"]:not(.button):checked::after {
 	transform: rotate(45deg) scale(1);
 }
 
-form input:hover {
+form select {
+	width: auto;
+	margin-right: 100%;
+}
+
+form input:hover, form select:hover {
 	border-color: var(--brightblue);
 }
 
-form input:focus {
+form input:focus, form select:focus {
 	border-color: var(--blue);
 }
 
@@ -816,6 +822,8 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 
 .scroll-card {
 	display: inline-block;
+	width: 25em;
+	max-width: 80%;
 	margin: 0;
 	margin-right: 20px;
 	vertical-align: middle;
@@ -973,7 +981,6 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 /* RECIPE CARD */
 .recipe-card {
 	padding: 10px 20px;
-	width: 25em;
 	border: 1px solid var(--darkgrey);
 	border-radius: 5px;
 	text-align: left;
@@ -987,7 +994,7 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 	overflow: hidden;
 }
 
-.recipe-card > p::after, .recipe-card > h2::after {
+.recipe-card > *::after {
 	content: "";
 	position: absolute;
 	top: 0;

@@ -62,12 +62,13 @@
 		<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
 		<p class="recipe-author">By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe|name }}</a></p>
 		<div class="recipe-info">
-			<span>Serves {{ recipe['servings'] }}</span>
-			<span>{{ recipe['time'] }} minutes</span>
-			<span>{% if recipe['difficulty'] == 1 %}Easy{% elif recipe['difficulty'] == 2 %}Medium{% else %}Hard{% endif %}</span>
+			{% if recipe['servings'] %}<span>Serves {{ recipe['servings'] }}</span>{% endif %}
+			{% if recipe['time'] %}<span>{{ recipe['time'] }} minutes</span>{% endif %}
+			{% if recipe['difficulty'] %}<span>{% if recipe['difficulty'] == 1 %}Easy{% elif recipe['difficulty'] == 2 %}Medium{% else %}Hard{% endif %}</span>{% endif %}
 			{% if recipe['vegetarian'] %}<span class="vegetarian"></span>{% endif %}
+			{% if not recipe['servings'] and not recipe['time'] and not recipe['difficulty'] and not recipe['vegetarian'] %}<span>No details</span>{% endif %}
 		</div>
-		<p class="recipe-description">{{ recipe['description'] }}</p>
+		<p class="recipe-description">{{ recipe['description'] if recipe['description'] else 'No description' }}</p>
 	</div>
 
 {%- endmacro %}

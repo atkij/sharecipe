@@ -11,6 +11,25 @@ from . import social_blueprint as bp
 
 @bp.route('/')
 def index():
+    db = get_db()
+    posts = []
+
+    x = db.execute(
+            'SELECT post.*, user.* FROM post INNER JOIN user ON post.user_id = user.user_id LIMIT 3 OFFSET 0',
+            ).fetchall()
+
+    for post in x:
+        if visible(post):
+            post = dict(post)
+            photos = db.execute(
+                    'SELECT photo.* FROM photo WHERE post_id = ?',
+                    (post['post_id'],)
+                    ).fetchall()
+            post['photos'] = photos
+            posts.append(post)
+
+    print(posts)
+
     return render_template('social/index.html')
 
 @bp.route('/<int:post_id>')

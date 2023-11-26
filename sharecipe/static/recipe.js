@@ -18,7 +18,7 @@
 				
 				input.value = input.value.slice(0, input.value.length - sep.length + 1);
 				
-				let newItem = new_input(list, method, sep);
+				let newItem = new_input(list, textarea, sep);
 				list.insertBefore(newItem, item.nextSibling);
 				item.nextSibling.firstChild.focus();
 				
@@ -40,7 +40,7 @@
 
 		input.addEventListener("input", function() {	
 			if (item.nextSibling == null) {
-				new_input(list, method, sep);
+				new_input(list, textarea, sep);
 			}
 
 			textarea.value = "";
