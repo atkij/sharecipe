@@ -58,6 +58,12 @@ function registerShareBtn(btn) {
 	});
 }
 
+function registerPrintBtn(btn) {
+	btn.addEventListener("click", function() {
+		window.print();
+	});
+}
+
 function Slideshow(slideshow) {
 	this.slideshow = slideshow;
 	this.slides = this.slideshow.getElementsByClassName("slide");
@@ -140,5 +146,10 @@ function registerSlideshow(slideshow) {
 	let shareBtns = document.getElementsByClassName("share");
 	for (let i = 0; i < shareBtns.length; i++) {
 		registerShareBtn(shareBtns[i]);
+	}
+	
+	let printBtns = document.getElementsByClassName("print");
+	for (let i = 0; i < printBtns.length; i++) {
+		registerPrintBtn(printBtns[i]);
 	}
 })();

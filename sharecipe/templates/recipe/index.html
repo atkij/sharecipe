@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import recipe_card, recipe_scroll %}
+{% from 'macros.html' import recipe_card, recipe_scroll, recipe_search %}
 {% block title %}Recipes{% endblock %}
 
 {% block heading %}
@@ -12,17 +12,22 @@
 {% block content %}
 
 <section>
-	<form class="search" action="{{ url_for('recipe.search') }}" method="get">
-		<input type="search" name="q" placeholder="Search recipes" value="{{ request.args['q'] }}" maxlength="100" required>
-		<input type="submit" value="Search">
-	</form>
+	{{ recipe_search() }}
 </section>
 
-{% if latest_recipes %}
-{{ recipe_scroll(latest_recipes, 'Latest Recipes', {}) }}
-{% endif %}
+<section>
+	{% if latest_recipes %}
+	{{ recipe_scroll(latest_recipes, 'Latest Recipes', {}) }}
+	{% endif %}
+</section>
 
-{% if user_recipes %}
-{{ recipe_scroll(user_recipes, 'My Recipes', {'user_id': g.user['user_id']}) }}
-{% endif %}
+<section>
+	{% if user_recipes %}
+	{{ recipe_scroll(user_recipes, 'My Recipes', {'user_id': g.user['user_id']}) }}
+	{% endif %}
+</section>
+
+<section class="center">
+	<a href="{{ url_for('recipe.random') }}" class="button">Random Recipe</a>
+
 {% endblock %}

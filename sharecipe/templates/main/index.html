@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import profile_pic, recipe_scroll, user_link %}
+{% from 'macros.html' import profile_pic, recipe_scroll, recipe_search, user_link %}
 {% block title %}Home{% endblock %}
 
 {% block meta_title %}Sharecipe{% endblock %}
@@ -10,6 +10,10 @@
 {% else %}
 <p>Welcome to Sharecipe!  To get started, <a href="{{ url_for('auth.register') }}">register</a> or <a href="{{ url_for('auth.login') }}">sign in</a>.</p>
 {% endif %}
+
+<section>
+	{{ recipe_search() }}
+</section>
 
 <section>
 	{% if latest_recipes %}

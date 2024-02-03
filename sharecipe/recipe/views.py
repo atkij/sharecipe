@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import abort, current_app, flash, g, redirect, render_template, request, url_for
 from math import ceil
+from random import randint
 import os
 import re
 import uuid
@@ -164,6 +165,19 @@ def latest():
                 ).fetchone()[0]
     
     return render_template('recipe/latest.html', params=params, recipes=recipes, username=username, page=page, pages=pages, limit=limit, count=count)
+
+@bp.route('/random')
+def random():
+    db = get_db()
+
+    count = int(db.execute(
+        'SELECT COUNT(*) FROM recipe'
+        ).fetchone()[0])
+
+    if count < 1:
+        abort(404)
+
+    return view(randint(1, count))
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required

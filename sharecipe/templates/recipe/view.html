@@ -2,6 +2,11 @@
 {% from 'macros.html' import help, modal, profile_pic, render_form, user_link %}
 {% block title %}{{ recipe['title'] }}{% endblock %}
 
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='print.css') }}" media="print" type="text/css">
+{% endblock %}
+
 {% block meta_description %}{{ recipe['description'] or recipe['title'] }}{% endblock %}
 {% block meta_image %}{% if recipe['photo'] %}{{ url_for('upload', filename=recipe['photo']) }}{% else %}{{ super() }}{% endif %}{% endblock %}
 {% block meta_type %}article{% endblock %}
@@ -18,10 +23,11 @@
 		<a href="#" data-modal="delete" class="modal-open button light error">Delete</a>
 	</div>
 </div>
-<button class="share button round light right" data-title="Sharecipe" data-text="Check out my {{ recipe['title'] }} recipe!" data-url="{{ config['URL'] + request.path }}"><i class="bi bi-share-fill"></i></button>
+<a class="share button round light right" data-title="Sharecipe" data-text="Check out my {{ recipe['title'] }} recipe!" data-url="{{ config['URL'] + request.path }}"><i class="bi bi-share-fill"></i></a>
 {% else %}
-<button class="share button round light right" data-title="Sharecipe" data-text="Check out {{ recipe|name }}'s {{ recipe['title'] }} recipe!" data-url="{{ config['URL'] + request.path }}"><i class="bi bi-share-fill"></i></button>
+<a class="share button round light right" data-title="Sharecipe" data-text="Check out {{ recipe|name }}'s {{ recipe['title'] }} recipe!" data-url="{{ config['URL'] + request.path }}"><i class="bi bi-share-fill"></i></a>
 {% endif %}
+<a class="print button round light right"><i class="bi bi-printer-fill"></i></a>
 {% endblock %}
 
 {% block content %}
@@ -89,22 +95,22 @@
 		</span>
 		{% if g.user and g.user['user_id'] != recipe['user_id'] %}<span><a href="#" data-modal="rate" class="modal-open">Rate</a></span>{% endif %}
 	</div>
-	<div class="recipe-info">
-	<span>Serves {{ recipe['servings'] }}</span>
-	<span>{{ recipe['time'] }} minutes</span>
-	<span>{% if recipe['difficulty'] == 1 %}Easy{% elif recipe['difficulty'] == 2 %}Medium{% else %}Hard{% endif %}</span>
+	<div class="recipe-info details">
+	<span>Serves: <span>{{ recipe['servings'] }}</span></span>
+	<span>Time: <span>{{ recipe['time'] }} minutes</span></span>
+	<span>Difficulty: <span>{% if recipe['difficulty'] == 1 %}easy{% elif recipe['difficulty'] == 2 %}medium{% else %}hard{% endif %}</span></span>
 	{% if recipe['vegetarian'] %}<span class="vegetarian"></span>{% endif %}
 	</div>
 
 	{% if recipe['photo'] %}
-	<div class="image-container recipe-info">
+	<div class="image-container recipe-info image">
 		<img src="{{ url_for('upload', filename=recipe['photo']) }}">
 	</div>
 	{% else %}
 	<hr class="recipe-info">
 	{% endif %}
 
-	<div class="recipe-info"><span>{{ recipe['description'] }}</span></div>
+	<div class="recipe-description description"><span>{{ recipe['description'] }}</span></div>
 	<div class="tags">{% for tag in tags %}<span>{{ tag }}</span>{% endfor %}</div>
 </div>
 
@@ -128,4 +134,8 @@
 	</ol>
 </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='wakelock.js') }}"></script>
 {% endblock %}

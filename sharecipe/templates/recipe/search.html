@@ -1,15 +1,12 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import recipe_card %}
+{% from 'macros.html' import recipe_card, recipe_search %}
 {% block title %}Search Recipes{% endblock %}
 
 {% block content %}
-<form class="search" method="get">
-	<input type="search" name="q" placeholder="Enter keywords" value="{{ request.args['q'] }}" maxlength="100" required>
-	{% for name, value in params.items() %}
-	<input type="hidden" name="{{ name }}" value="{{ value }}">
-	{% endfor %}
-	<input type="submit" value="Search">
-</form>
+
+<section>
+	{{ recipe_search(params=params) }}
+</section>
 
 {% if recipes %}
 <p>Showing {{ ((page - 1) * limit) + 1 }} &ndash; {{ (page * limit, count)|min }} of {{ count }} recipes</p>

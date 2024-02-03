@@ -45,14 +45,12 @@ def register_blueprints(app):
     from sharecipe.auth import auth_blueprint
     from sharecipe.main import main_blueprint
     from sharecipe.recipe import recipe_blueprint
-    from sharecipe.social import social_blueprint
     from sharecipe.user import user_blueprint
     
     app.register_blueprint(account_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(main_blueprint)
     app.register_blueprint(recipe_blueprint)
-    app.register_blueprint(social_blueprint)
     app.register_blueprint(user_blueprint)
 
     app.add_url_rule('/', endpoint='index')
