@@ -1,6 +1,6 @@
 [project]
 name = "sharecipe"
-version = "1.0.2"
+version = "1.0.3"
 description = "An online recipe sharing website"
 readme = "README.md"
 dependencies = [
