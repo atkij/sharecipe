@@ -4,7 +4,7 @@ from flask import Flask, current_app, render_template, send_from_directory, sess
 from werkzeug.exceptions import HTTPException
 
 from sharecipe.db import get_db
-from sharecipe.util import name_filter
+from sharecipe.util import name_filter, return_url_for_global, inject_login_form
 
 def create_app(test_config=None):
     # create and configure the app
@@ -36,6 +36,8 @@ def create_app(test_config=None):
     initialize_extensions(app)
 
     app.add_template_filter(name_filter, name='name')
+    app.add_template_global(return_url_for_global, name='return_url_for')
+    app.context_processor(inject_login_form)
     app.register_error_handler(HTTPException, error)
     
     return app
@@ -58,9 +60,10 @@ def register_blueprints(app):
 
 def initialize_extensions(app):
     from sharecipe import db
-    from sharecipe import admin
+    #from sharecipe import admin
+
     db.init_app(app)
-    admin.init_app(app)
+    #admin.init_app(app)
 
 def upload(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)

@@ -216,6 +216,7 @@ nav button {
 }
 
 nav button:hover {
+	background-color: var(--brightblue);
 }
 
 nav button:active {
@@ -433,7 +434,12 @@ form li textarea {
 
 /* ---GENERIC COMPONENTS--- */
 /* ALERTS */
+.alert {
+	margin: 0;
+}
+
 .alert .content {
+	margin: 20px 20px 0 20px;
 	padding: 20px;
 	color: var(--black);
 }
@@ -458,7 +464,7 @@ form li textarea {
 	appearance: none;
 	outline: none;
 	float: right;
-	margin: 0;
+	margin: 20px 20px 0 0;
 	padding: 14px 20px;
 	color: var(--dark);
 	font-size: 28px;
@@ -1082,6 +1088,21 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 	margin-right: 20px;
 	width: 5em;
 	height: 5em;
+}
+
+.profile-details {
+	min-height: 5em;
+}
+
+.profile-details h2 {
+	margin: 0;
+	padding-top: 0.5em;
+	font-size: 1.5rem;
+}
+
+.profile-details p {
+	margin: 0;
+	padding: 0.5em 0;
 }
 
 /* USER LINKS */

@@ -5,10 +5,11 @@ import os
 import uuid
 
 from sharecipe.db import get_db
-from sharecipe.util import check_password_hash, generate_password_hash, login_required, resize_image
-from sharecipe.forms import UpdateProfileForm, UploadPictureForm, DeletePictureForm, UpdatePasswordForm, DeleteAccountForm
+from sharecipe.util import resize_image
+from sharecipe.auth.helpers import check_password_hash, generate_password_hash, login_required
 
 from . import account_blueprint as bp
+from .forms import UpdateProfileForm, UploadPictureForm, DeletePictureForm, UpdatePasswordForm, DeleteAccountForm
 
 @bp.route('/')
 @login_required

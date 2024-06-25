@@ -3,41 +3,26 @@ import hashlib
 from PIL import Image, UnidentifiedImageError
 import os
 import time
+from urllib.parse import urlparse, urljoin
 
-from flask import abort, current_app, g, redirect, session, url_for
+from flask import abort, current_app, g, redirect, session, url_for, request
 
-def _hash_internal(password, salt, n=16384, r=8, p=1):
-    maxmem = 132 * n * r * p
-    password = password.encode('utf-8')
-
-    h = hashlib.scrypt(password, salt=salt, n=n, r=r, p=p, maxmem=maxmem).hex()
-
-    return (h, f'scrypt:{n}:{r}:{p}')
-
-def generate_password_hash(password):
-    salt = os.urandom(16)
-    hashval, method = _hash_internal(password, salt)
-    return f'{method}${salt.hex()}${hashval}'
-
-def check_password_hash(password_hash, password):
-    method, salt, hashval = password_hash.split('$', 2)
-    _, n, r, p = method.split(':', 3)
-
-    salt = bytes.fromhex(salt)
-    n, r, p = map(int, (n, r, p))
-
-    return hashval == _hash_internal(password, salt, n=n, r=r, p=p)[0]
 
 def name_filter(user):
     return user['name'] if user['name'] else user['username']
 
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(*args, **kwargs):
-        if g.user is None:
-            return redirect(url_for('auth.login'))
-        return view(*args, **kwargs)
-    return wrapped_view
+def return_url_for_global(endpoint, *, _anchor=None, _method=None, _scheme=None, _external=None, **values):
+    next = url_for(request.endpoint, **request.view_args, **request.args)
+    return url_for(endpoint, _anchor=_anchor, _method=_method, _scheme=_scheme, _external=_external, next=next, **values)
+
+def inject_login_form():
+    from sharecipe.auth.forms import LoginForm
+    login_form = None
+
+    if g.user is None:
+        login_form=LoginForm()
+
+    return dict(login_form=login_form)
 
 def resize_image(stream, size):
     try:
@@ -52,3 +37,31 @@ def resize_image(stream, size):
             return img.resize((int((size / img.size[1]) * img.size[0]), size))
     except UnidentifiedImageError:
         return None
+
+def is_safe_redirect_url(target):
+    host_url = urlparse(request.host_url)
+    print(host_url)
+    redirect_url = urlparse(urljoin(request.host_url, target))
+    print(redirect_url)
+    return (
+            redirect_url.scheme in ('http', 'https')
+            and host_url.netloc == redirect_url.netloc
+            )
+
+def get_safe_redirect(url):
+    if url and is_safe_redirect_url(url):
+        return url
+
+    url = request.referrer
+    if url and is_safe_redirect_url(url):
+        return url
+
+    return url_for('index')
+
+def redirect_dest(fallback):
+    dest_url = request.args.get('next')
+
+    if not dest_url:
+        dest_url = url_for(fallback)
+    
+    return redirect(dest_url)

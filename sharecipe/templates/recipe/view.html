@@ -110,7 +110,7 @@
 	<hr class="recipe-info">
 	{% endif %}
 
-	<div class="recipe-description description"><span>{{ recipe['description'] }}</span></div>
+	<div class="recipe-description description"><span>{{ recipe['description'] or 'No description provided.' }}</span></div>
 	<div class="tags">{% for tag in tags %}<span>{{ tag }}</span>{% endfor %}</div>
 </div>
 

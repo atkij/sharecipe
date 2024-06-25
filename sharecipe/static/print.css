@@ -146,3 +146,7 @@ h1.title {
 	content: "";
 	margin-left: 30px;
 }
+
+hr.recipe-info {
+	display: none;
+}

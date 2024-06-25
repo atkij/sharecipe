@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% from 'macros.html' import profile_pic, recipe_scroll, recipe_search, user_link %}
 {% block title %}Home{% endblock %}
+{% block title_wrapper %}<title>Sharecipe</title>{% endblock %}
 
 {% block meta_title %}Sharecipe{% endblock %}
+{% block meta_description %}Find and share recipes with your friends, family and the world.{% endblock %}
 
 {% block content %}
 {% if g.user %}

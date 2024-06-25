@@ -7,10 +7,11 @@ import re
 import uuid
 
 from sharecipe.db import get_db
-from sharecipe.forms import RecipeForm, RateForm, PhotoForm, DeleteForm
-from sharecipe.util import login_required, resize_image
+from sharecipe.util import resize_image
+from sharecipe.auth.helpers import login_required
 
 from . import recipe_blueprint as bp
+from .forms import RecipeForm, RateForm, PhotoForm, DeleteForm
 
 @bp.route('/')
 def index():

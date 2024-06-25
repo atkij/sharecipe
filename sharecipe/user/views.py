@@ -3,7 +3,7 @@ from flask import abort, g, redirect, render_template, request, url_for
 from math import ceil
 
 from sharecipe.db import get_db
-from sharecipe.util import login_required
+from sharecipe.auth.helpers import login_required
 
 from . import user_blueprint
 

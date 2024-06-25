@@ -1,10 +1,11 @@
 from flask import flash, g, redirect, render_template, request, session, url_for
 
 from sharecipe.db import get_db
-from sharecipe.util import check_password_hash, generate_password_hash
-from sharecipe.forms import LoginForm, RegisterForm
+from sharecipe.util import  get_safe_redirect
 
 from . import auth_blueprint
+from .forms import LoginForm, RegisterForm
+from .helpers import check_password_hash, generate_password_hash
 
 @auth_blueprint.route('/register', methods=('GET', 'POST'))
 def register():
@@ -24,8 +25,9 @@ def register():
         else:
             session.clear()
             session['user_id'] = res.lastrowid
-                    
-            return redirect(url_for('index'))
+
+            flash('Account created successfully!  Get started by <a href="{}">searching</a> for recipes.'.format(url_for('recipe.index')), 'success')
+            return redirect(get_safe_redirect(request.args.get('next')))
     return render_template('auth/register.html', form=form)
 
 @auth_blueprint.route('/login', methods=('GET', 'POST'))
@@ -47,13 +49,13 @@ def login():
             db.execute('UPDATE user SET last_login = datetime("now") WHERE user_id = ?', (user['user_id'],))
             db.commit()
 
-            return redirect(url_for('index'))
+            return redirect(get_safe_redirect(request.args.get('next')))
     return render_template('auth/login.html', form=form)
 
 @auth_blueprint.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    return redirect(get_safe_redirect(request.args.get('next')))
 
 @auth_blueprint.before_app_request
 def load_user():
