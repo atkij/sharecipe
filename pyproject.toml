@@ -7,9 +7,11 @@ dependencies = [
 	"email_validator",
 	"flask",
 	"Flask-WTF",
+	"Flask-SQLAlchemy"
 	"gunicorn",
 	"Pillow",
 	"WTForms",
+	"SQLAlchemy",
 ]
 
 [project.optional-dependencies]

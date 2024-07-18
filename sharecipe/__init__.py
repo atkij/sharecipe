@@ -1,9 +1,8 @@
 import os
 import importlib.metadata
-from flask import Flask, current_app, render_template, send_from_directory, session, url_for, g
+from flask import Flask, current_app, render_template, send_from_directory
 from werkzeug.exceptions import HTTPException
 
-from sharecipe.db import get_db
 from sharecipe.util import name_filter, return_url_for_global, inject_login_form
 
 def create_app(test_config=None):
@@ -12,6 +11,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
             SECRET_KEY='dev',
             DATABASE=os.path.join(app.instance_path, 'sharecipe.db'),
+            SQLALCHEMY_DATABASE_URI='sqlite:///sharecipe.db',
             UPLOAD_FOLDER=os.path.join(app.instance_path, 'uploads'),
             URL='',
             VERSION=importlib.metadata.version('sharecipe'),

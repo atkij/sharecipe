@@ -45,13 +45,6 @@ def view(recipe_id):
             (recipe_id,)
             ).fetchone()
 
-    #recipe = dict(recipe)
-
-    #recipe.update(db.execute(
-    #        'SELECT AVG(rating.rating) AS rating, COUNT(*) AS rating_count FROM rating WHERE rating.recipe_id = ?',
-    #        (recipe_id,)
-    #        ).fetchone())
-
     if recipe['title'] is None:
         abort(404)
 

@@ -27,7 +27,7 @@ def register():
             session['user_id'] = res.lastrowid
 
             flash('Account created successfully!  Get started by <a href="{}">searching</a> for recipes.'.format(url_for('recipe.index')), 'success')
-            return redirect(get_safe_redirect(request.args.get('next')))
+            return redirect(get_safe_redirect(request.args.get('return_url')))
     return render_template('auth/register.html', form=form)
 
 @auth_blueprint.route('/login', methods=('GET', 'POST'))
@@ -49,7 +49,7 @@ def login():
             db.execute('UPDATE user SET last_login = datetime("now") WHERE user_id = ?', (user['user_id'],))
             db.commit()
 
-            return redirect(get_safe_redirect(request.args.get('next')))
+            return redirect(get_safe_redirect(request.args.get('return_url')))
     return render_template('auth/login.html', form=form)
 
 @auth_blueprint.route('/logout')

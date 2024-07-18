@@ -1,4 +1,4 @@
-from flask import abort, current_app, flash, g, redirect, render_template, request, session, url_for
+from flask import current_app, flash, g, redirect, render_template, request, session, url_for
 
 from datetime import datetime
 import os
