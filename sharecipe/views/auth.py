@@ -1,12 +1,11 @@
-from flask import flash, g, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
 from ..database import users, profiles
 from ..util import get_safe_redirect
+from ..forms.auth import LoginForm, RegisterForm, VerifyForm
+from ..controllers import auth as c
 
-from .forms import LoginForm, RegisterForm, VerifyForm
-from . import controllers as c
-
-from . import auth_blueprint as bp
+bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @bp.route('/register', methods=('GET', 'POST'))
 def register():

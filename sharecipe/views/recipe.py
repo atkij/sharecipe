@@ -1,21 +1,20 @@
 from dataclasses import asdict
-from datetime import datetime
-from flask import abort, current_app, flash, g, redirect, render_template, request, url_for
+from flask import abort, Blueprint, current_app, flash, g, redirect, render_template, request, url_for
 from math import ceil
 from random import randint
 import os
-import re
 import uuid
 
-from sharecipe.database.database import get_db
-from sharecipe.util import resize_image
-from sharecipe.auth.helpers import login_required
+from ..database.database import get_db
+from ..util import resize_image
+from ..core.auth import login_required
 
 from ..database import profiles, recipes, comments
 
-from . import recipe_blueprint as bp
-from .forms import FavouriteForm, RecipeForm, RateForm, PhotoForm, DeleteForm, CommentForm
-from . import controllers
+from ..forms.recipe import FavouriteForm, RecipeForm, RateForm, PhotoForm, DeleteForm, CommentForm
+from ..controllers import recipe as controllers
+
+bp = Blueprint('recipe', __name__, url_prefix='/recipe')
 
 @bp.route('/')
 def index():

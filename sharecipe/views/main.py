@@ -1,10 +1,8 @@
-from flask import render_template, send_from_directory
-
-from sharecipe.database.database import get_db
+from flask import Blueprint, render_template
 
 from ..database import recipes
 
-from . import main_blueprint as bp
+bp = Blueprint('main', __name__)
 
 @bp.route('/')
 def index():

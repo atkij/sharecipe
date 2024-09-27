@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import List, Optional, Self
-#from pydantic import BaseModel
 from sqlite3 import Row
 from dataclasses import dataclass
 

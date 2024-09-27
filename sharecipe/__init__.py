@@ -3,7 +3,7 @@ from importlib import metadata
 from flask import Flask, current_app, render_template, send_from_directory
 from werkzeug.exceptions import HTTPException
 
-from sharecipe.util import return_url_for_global, inject_login_form
+from .util import return_url_for_global, inject_login_form
 
 def create_app(test_config=None):
     # create and configure the app
@@ -41,27 +41,21 @@ def create_app(test_config=None):
     return app
 
 def register_blueprints(app):
-    from sharecipe.account import account_blueprint
-    from sharecipe.auth import auth_blueprint
-    from sharecipe.main import main_blueprint
-    from sharecipe.recipe import recipe_blueprint
-    from sharecipe.user import user_blueprint
+    from .views import account, auth, main, recipe, user
     
-    app.register_blueprint(account_blueprint)
-    app.register_blueprint(auth_blueprint)
-    app.register_blueprint(main_blueprint)
-    app.register_blueprint(recipe_blueprint)
-    app.register_blueprint(user_blueprint)
+    app.register_blueprint(account.bp)
+    app.register_blueprint(auth.bp)
+    app.register_blueprint(main.bp)
+    app.register_blueprint(recipe.bp)
+    app.register_blueprint(user.bp)
 
     app.add_url_rule('/', endpoint='index')
     app.add_url_rule('/uploads/<path:filename>', endpoint='upload', view_func=upload)
 
 def initialize_extensions(app):
-    from sharecipe.database import database
-    #from sharecipe import admin
+    from .database import database
 
     database.init_app(app)
-    #admin.init_app(app)
 
 def upload(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)

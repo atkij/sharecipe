@@ -1,11 +1,11 @@
-from flask import abort, g, redirect, render_template, url_for
+from flask import abort, Blueprint, g, redirect, render_template, url_for
 
-from ..auth.helpers import login_required
+from ..core.auth import login_required
 from ..database import profiles, recipes
 
-from . import user_blueprint
+bp = Blueprint('user', __name__, url_prefix='/user')
 
-@user_blueprint.route('/<int:user_id>')
+@bp.route('/<int:user_id>')
 def index(user_id):
     profile = profiles.find(user_id)
 
@@ -30,7 +30,7 @@ def index(user_id):
         favourite_recipes=favourite_recipes
     )
 
-@user_blueprint.route('/<int:user_id>/follow')
+@bp.route('/<int:user_id>/follow')
 @login_required
 def follow(user_id):
     if not (g.user is None or g.user.id == user_id or profiles.follows(user_id, g.user.id)):
@@ -38,7 +38,7 @@ def follow(user_id):
 
     return redirect(url_for('user.index', user_id=user_id)) 
 
-@user_blueprint.route('/<int:user_id>/unfollow')
+@bp.route('/<int:user_id>/unfollow')
 @login_required
 def unfollow(user_id):
     if not (g.user is None or g.user.id == user_id or not profiles.follows(user_id, g.user.id)):

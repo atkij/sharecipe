@@ -1,18 +1,14 @@
-import functools
-import hashlib
 from PIL import Image, UnidentifiedImageError
-import os
-import time
 from urllib.parse import urlparse, urljoin
 
-from flask import abort, current_app, g, redirect, session, url_for, request
+from flask import g, redirect, url_for, request
 
 def return_url_for_global(endpoint, *, _anchor=None, _method=None, _scheme=None, _external=None, **values):
     return_url = url_for(request.endpoint, **request.view_args, **request.args)
     return url_for(endpoint, _anchor=_anchor, _method=_method, _scheme=_scheme, _external=_external, return_url=return_url, **values)
 
 def inject_login_form():
-    from sharecipe.auth.forms import LoginForm
+    from .forms.auth import LoginForm
     login_form = None
 
     if g.user is None:

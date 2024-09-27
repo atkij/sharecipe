@@ -10,7 +10,7 @@ from flask import g, session, current_app, render_template
 from ..database import users
 from ..core import email
 
-from .helpers import check_password_hash, generate_password_hash
+from ..core.auth import check_password_hash, generate_password_hash
 
 class AccountError(Exception):
     pass

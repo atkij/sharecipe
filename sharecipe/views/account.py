@@ -2,14 +2,14 @@ from dataclasses import asdict
 import os
 import uuid
 
-from flask import current_app, flash, g, redirect, render_template, request, session, url_for
+from flask import current_app, Blueprint, flash, g, redirect, render_template, request, session, url_for
 
-from ..auth.helpers import generate_password_hash, login_required
+from ..core.auth import generate_password_hash, login_required
 from ..database import profiles, users
 from ..util import resize_image
+from ..forms.account import UpdateProfileForm, UploadPictureForm, DeletePictureForm, UpdatePasswordForm, DeleteAccountForm
 
-from . import account_blueprint as bp
-from .forms import UpdateProfileForm, UploadPictureForm, DeletePictureForm, UpdatePasswordForm, DeleteAccountForm
+bp = Blueprint('account', __name__, url_prefix='/account')
 
 @bp.route('/')
 @login_required

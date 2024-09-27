@@ -5,7 +5,7 @@ from wtforms.validators import Email, EqualTo, InputRequired, Length, Optional, 
 
 from flask import g
 
-from sharecipe.auth.helpers import check_password_hash
+from ..core.auth import check_password_hash
 
 # additional validator for checking when one field is not equal to another
 class NotEqualTo(object):
