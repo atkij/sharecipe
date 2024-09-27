@@ -1,7 +1,7 @@
 import sqlite3
 
 import pytest
-from sharecipe.db import get_db
+from sharecipe.database.database import get_db
 
 def test_get_close_db(app):
     with app.app_context():

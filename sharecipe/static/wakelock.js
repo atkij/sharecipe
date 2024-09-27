@@ -1,7 +1,6 @@
 (function() {
 	function requestWakeLock() {
 		if ('WakeLock' in window && 'request' in window.WakeLock) {
-			console.log('window wakelock');
 			let wakeLock = null;
 
 			const request = () => {
@@ -19,14 +18,12 @@
 			request();
 
 		} else if ('wakeLock' in navigator && 'request' in navigator.wakeLock) {
-			console.log('navigator wakelock');
 			let wakeLock = null;
 
 			const request = async () => {
 				try {
 					wakeLock = await navigator.wakeLock.request('screen');
 					wakeLock.addEventListener('release', (e) => {
-						console.log('release callback');
 						requestWakeLock();
 					});
 				} catch(e) {}

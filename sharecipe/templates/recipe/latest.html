@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import recipe_card, recipe_search %}
+{% from 'macros.html' import recipe_card, recipe_search, pagination_links %}
 {% block title %}
-{% if  g.user['user_id'] == request.args.get('user_id')|int %}
+{% if  g.user.id == filters['user_id']|int %}
 Your Recipes
-{% elif username %}
-{{ username }}'s Recipes
+{% elif profile %}
+{{ profile.name }}'s Recipes
 {% else %}
 Latest Recipes
 {% endif %}
@@ -13,29 +13,19 @@ Latest Recipes
 {% block content %}
 
 <section>
-	{{ recipe_search(params=params) }}
+	{{ recipe_search(params=filters) }}
 </section>
 
-{% if recipes %}
-<p>Showing {{ ((page - 1) * limit) + 1 }} &ndash; {{ (page * limit, count)|min }} of {{ count }} recipes</p>
+{% if latest_recipes %}
+<p>Showing {{ pagination['offset'] + 1 }} &ndash; {{ (pagination['offset'] + pagination['limit'], pagination['count'])|min }} of {{ pagination['count'] }} recipes</p>
 
 <div class="recipe-list">
-	{% for recipe in recipes %}
+	{% for recipe in latest_recipes %}
 	{{ recipe_card(recipe) }}
 	{% endfor %}
 </div>
 
-<div class="pagination">
-	<a href="{% if page==1 %}#{% else %}{{ url_for(request.endpoint, page=page-1, **params) }}{% endif %}">&laquo;</a>
-	{% for pagenum in range(1, pages+ 1) %}
-	{% if pagenum == page %}
-	<a class="active" href="#">{{ pagenum }}</a>
-	{% else %}
-	<a href="{{ url_for(request.endpoint, page=pagenum, **params) }}">{{ pagenum }}</a>
-	{% endif %}
-	{% endfor %}
-	<a href="{% if page==pages %}#{% else %}{{ url_for(request.endpoint, page=page+1, **params) }}{% endif %}">&raquo;</a>
-</div>
+{{ pagination_links(pagination, filters) }}
 
 {% else %}
 <p>No recipes available.</p>

@@ -1,9 +1,9 @@
 import os
-import importlib.metadata
+from importlib import metadata
 from flask import Flask, current_app, render_template, send_from_directory
 from werkzeug.exceptions import HTTPException
 
-from sharecipe.util import name_filter, return_url_for_global, inject_login_form
+from sharecipe.util import return_url_for_global, inject_login_form
 
 def create_app(test_config=None):
     # create and configure the app
@@ -11,10 +11,9 @@ def create_app(test_config=None):
     app.config.from_mapping(
             SECRET_KEY='dev',
             DATABASE=os.path.join(app.instance_path, 'sharecipe.db'),
-            SQLALCHEMY_DATABASE_URI='sqlite:///sharecipe.db',
             UPLOAD_FOLDER=os.path.join(app.instance_path, 'uploads'),
-            URL='',
-            VERSION=importlib.metadata.version('sharecipe'),
+            URL='http://localhost:5000',
+            VERSION=metadata.version('sharecipe'),
             )
 
     if test_config is None:
@@ -35,7 +34,6 @@ def create_app(test_config=None):
     # initialize extensions
     initialize_extensions(app)
 
-    app.add_template_filter(name_filter, name='name')
     app.add_template_global(return_url_for_global, name='return_url_for')
     app.context_processor(inject_login_form)
     app.register_error_handler(HTTPException, error)
@@ -59,10 +57,10 @@ def register_blueprints(app):
     app.add_url_rule('/uploads/<path:filename>', endpoint='upload', view_func=upload)
 
 def initialize_extensions(app):
-    from sharecipe import db
+    from sharecipe.database import database
     #from sharecipe import admin
 
-    db.init_app(app)
+    database.init_app(app)
     #admin.init_app(app)
 
 def upload(filename):

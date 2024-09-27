@@ -4,14 +4,11 @@ version = "1.0.3"
 description = "An online recipe sharing website"
 readme = "README.md"
 dependencies = [
-	"email_validator",
+	"email-validator",
 	"flask",
 	"Flask-WTF",
-	"Flask-SQLAlchemy"
-	"gunicorn",
 	"Pillow",
 	"WTForms",
-	"SQLAlchemy",
 ]
 
 [project.optional-dependencies]

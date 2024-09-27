@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from datetime import datetime
 from flask import abort, current_app, flash, g, redirect, render_template, request, url_for
 from math import ceil
@@ -6,53 +7,48 @@ import os
 import re
 import uuid
 
-from sharecipe.db import get_db
+from sharecipe.database.database import get_db
 from sharecipe.util import resize_image
 from sharecipe.auth.helpers import login_required
 
+from ..database import profiles, recipes, comments
+
 from . import recipe_blueprint as bp
-from .forms import RecipeForm, RateForm, PhotoForm, DeleteForm
+from .forms import FavouriteForm, RecipeForm, RateForm, PhotoForm, DeleteForm, CommentForm
+from . import controllers
 
 @bp.route('/')
 def index():
-    db = get_db()
-    latest_recipes = None
-    user_recipes = None
-
-    latest_recipes = db.execute(
-            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id ORDER BY created DESC LIMIT 10'
-            ).fetchall()
-
-    if g.user:
-        user_recipes = db.execute(
-                'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE recipe.user_id = ? ORDER BY created DESC LIMIT 10',
-                (g.user['user_id'],)
-                ).fetchall()
+    latest_recipes = recipes.find()
     
-    return render_template('recipe/index.html', latest_recipes=latest_recipes, user_recipes=user_recipes)
+    user_recipes = None
+    favourite_recipes = None
+    if g.user:
+        user_recipes = recipes.find(user_id=g.user.id)
+        favourite_recipes = recipes.find(favourite_id=g.user.id)
+
+    return render_template('recipe/index.html',
+        latest_recipes=latest_recipes,
+        user_recipes=user_recipes,
+        favourite_recipes=favourite_recipes
+    )
 
 @bp.route('/<int:recipe_id>')
 def view(recipe_id):
-    upload_photo_form = PhotoForm()
-    delete_photo_form = DeleteForm()
-    rate_form = RateForm()
-    delete_form = DeleteForm()
+    recipe = recipes.find_one(recipe_id, g.user.id if g.user else None)
 
-    db = get_db()
-
-    recipe = db.execute(
-            'SELECT recipe.*, user.*, AVG(rating.rating) AS rating, COUNT(rating.rating) AS rating_count FROM recipe INNER JOIN user ON recipe.user_id = user.user_id LEFT JOIN rating ON recipe.recipe_id = rating.recipe_id WHERE recipe.recipe_id = ?',
-            (recipe_id,)
-            ).fetchone()
-
-    if recipe['title'] is None:
+    if recipe is None:
         abort(404)
 
-    ingredients = recipe['ingredients'].split('\r\n')
-    method = [x.split('\n') for x in recipe['method'].split('\r\n\r\n')]
-    tags = list(filter(None, (recipe['tags'] or '').split(',')))
-
-    return render_template('recipe/view.html', recipe=recipe, ingredients=ingredients, method=method, tags=tags, delete_form=delete_form, upload_photo_form=upload_photo_form, rate_form=rate_form, delete_photo_form=delete_photo_form)
+    return render_template('recipe/view.html',
+        recipe=recipe,
+        upload_photo_form=PhotoForm(),
+        delete_photo_form=DeleteForm(),
+        favourite_form=FavouriteForm(),
+        rate_form=RateForm(),
+        delete_form=DeleteForm(),
+        comment_form=CommentForm(),
+    )
 
 @bp.route('/<int:recipe_id>/rate', methods=('GET', 'POST'))
 @login_required
@@ -60,27 +56,63 @@ def rate(recipe_id):
     form = RateForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        db = get_db()
+        recipe = recipes.find_details(recipe_id)
 
-        author_id = db.execute('SELECT user_id FROM recipe WHERE recipe_id = ?', (recipe_id,)).fetchone()[0]
-        if g.user['user_id'] == author_id:
+        if g.user.id == recipe.user.id:
             flash('You cannot rate your own recipe.', 'error')
             return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
-        rated = db.execute('SELECT EXISTS(SELECT 1 FROM rating WHERE user_id = ? AND recipe_id = ?)', (g.user['user_id'], recipe_id)).fetchone()[0]
+        recipes.rate(g.user.id, recipe.id, form.rating.data)
 
-        if rated:
-            db.execute(
-                    'UPDATE rating SET rating = ? WHERE user_id = ? AND recipe_id = ?',
-                    (form.rating.data, g.user['user_id'], recipe_id)
-                    )
-        else:
-            db.execute(
-                    'INSERT INTO rating (user_id, recipe_id, rating) VALUES (?, ?, ?)',
-                    (g.user['user_id'], recipe_id, form.rating.data)
-                    )
+    return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
-        db.commit()
+@bp.route('/<int:recipe_id>/favourite', methods=('GET', 'POST'))
+@login_required
+def favourite(recipe_id):
+    form = FavouriteForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        recipe = recipes.find_one(recipe_id, g.user.id)
+
+        if not recipe.favourite:
+            recipes.favourite(g.user.id, recipe_id)
+            flash('Recipe added to favourites.', 'success')
+    
+    return redirect(url_for('recipe.view', recipe_id=recipe_id))
+
+@bp.route('/<int:recipe_id>/unfavourite', methods=('GET', 'POST'))
+@login_required
+def unfavourite(recipe_id):
+    form = FavouriteForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        recipe = recipes.find_one(recipe_id, g.user.id)
+
+        if recipe.favourite:
+            recipes.unfavourite(g.user.id, recipe_id)
+            flash('Recipe removed from favourites.', 'success')
+    
+    return redirect(url_for('recipe.view', recipe_id=recipe_id))
+
+@bp.route('/<int:recipe_id>/comment', methods=('GET', 'POST'))
+@login_required
+def comment(recipe_id):
+    form = CommentForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        comments.create(g.user.id, recipe_id, form.comment.data)
+        flash('New comment added.', 'success')
+    
+    return redirect(url_for('recipe.view', recipe_id=recipe_id))
+
+@bp.route('/<int:recipe_id>/comment/<int:comment_id>/delete', methods=('GET', 'POST'))
+@login_required
+def delete_comment(recipe_id, comment_id):
+    form = DeleteForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        if controllers.delete_comment(recipe_id, comment_id):
+            flash('Comment deleted.', 'success')
 
     return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
@@ -94,7 +126,7 @@ def search():
     vegetarian = request.args.get('vegetarian') == 'vegetarian' or 'veg' in search
     user_id = request.args.get('user_id')
 
-    recipes = None
+    recipess = None
     count = int()
     page = int()
     pages = int()
@@ -127,51 +159,42 @@ def search():
     return render_template('recipe/search.html', params=params, recipes=recipes, page=page, pages=pages, limit=limit, count=count)
 
 @bp.route('/latest')
-def latest():
-    db = get_db()
-
-    params = request.args.copy()
-    params.pop('page', None)
-    
-    vegetarian = request.args.get('vegetarian') == 'vegetarian'
+def latest():   
     user_id = request.args.get('user_id')
-    username = None
-    print(vegetarian)
+    favourite_id = request.args.get('favourite_id')
+    vegetarian = request.args.get('vegetarian')
 
-    count = int(db.execute(
-            'SELECT COUNT(*) FROM recipe WHERE recipe.user_id = ? OR ?',
-            (user_id, not user_id)
-            ).fetchone()[0])
-    
-    page = int(request.args.get('page')) if request.args.get('page', '').isnumeric() else 1
+    count = recipes.count(user_id, favourite_id, vegetarian)
+    page = request.args.get('page', 1, type=int)
     limit = 60
+    offset = (page - 1) * limit
     pages = ceil(count / limit)
 
-    recipes = db.execute(
-            'SELECT recipe.*, user.* FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE (vegetarian = ? OR vegetarian = ?) AND (recipe.user_id = ? OR ?) ORDER BY created DESC LIMIT ? OFFSET ?',
-            (vegetarian, vegetarian + 1, user_id, not user_id, limit, ((page - 1) * limit))
-            ).fetchall()
+    latest_recipes = recipes.find(user_id, favourite_id, vegetarian, limit, offset)
+    profile = profiles.find(user_id)
 
-    if user_id:
-        username = db.execute(
-                'SELECT user.username FROM user WHERE user.user_id = ?',
-                (user_id,)
-                ).fetchone()[0]
-    
-    return render_template('recipe/latest.html', params=params, recipes=recipes, username=username, page=page, pages=pages, limit=limit, count=count)
+    return render_template('recipe/latest.html',
+        latest_recipes=latest_recipes,
+        profile=profile,
+        filters={
+            'user_id': user_id,
+            'favourite_id': favourite_id,
+            'vegetarian': vegetarian
+        },
+        pagination={
+            'page': page,
+            'pages': pages,
+            'count': count,
+            'limit': limit,
+            'offset': offset
+        }
+    )
 
 @bp.route('/random')
 def random():
-    db = get_db()
+    count = recipes.count()
 
-    count = int(db.execute(
-        'SELECT COUNT(*) FROM recipe'
-        ).fetchone()[0])
-
-    if count < 1:
-        abort(404)
-
-    return view(randint(1, count))
+    return redirect(url_for('recipe.view', recipe_id=randint(1, count)))
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
@@ -179,42 +202,53 @@ def create():
     form = RecipeForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        # open database
-        db = get_db()
-        
-        res = db.execute(
-                'INSERT INTO recipe (user_id, title, description, ingredients, method, time, difficulty, servings, vegetarian, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (g.user['user_id'], form.title.data, form.description.data, form.ingredients.data, form.method.data, form.time.data, form.difficulty.data, form.servings.data, form.vegetarian.data, form.tags.data)
-                )
-        db.commit()
+        recipe_id = recipes.create(
+            g.user.id,
+            form.title.data,
+            form.description.data,
+            form.time.data,
+            form.difficulty.data,
+            form.servings.data,
+            form.vegetarian.data,
+            form.ingredients.data.split('\r\n'),
+            form.method.data.split('\r\n\r\n'),
+            form.tags.data.split(',')
+        )
 
-        return redirect(url_for('recipe.view', recipe_id=res.lastrowid))
+        return redirect(url_for('recipe.view', recipe_id=recipe_id))
     return render_template('recipe/create.html', form=form)
 
 @bp.route('/<int:recipe_id>/update', methods=('GET', 'POST'))
 @login_required
 def update(recipe_id):
-    db = get_db()
-
-    recipe = db.execute(
-            'SELECT * FROM recipe WHERE recipe_id = ?',
-            (recipe_id,)
-            ).fetchone()
+    recipe = recipes.find_one(recipe_id)
 
     if recipe is None:
         abort(404)
-    elif g.user['user_id'] != recipe['user_id']:
+    elif g.user.id != recipe.user.id:
         abort(403)
+    
+    data = asdict(recipe)
+    data['ingredients'] = '\r\n'.join(data['ingredients'])
+    data['method'] = '\r\n\r\n'.join(data['method'])
+    data['tags'] = ','.join(data['tags'])
 
-    form = RecipeForm(request.form, data=recipe)
+    form = RecipeForm(request.form, data=data)
+    form.vegetarian.data = recipe.vegetarian
 
     if request.method == 'POST' and form.validate():
-        print(form.method.data)
-        db.execute(
-                'UPDATE recipe SET title = ?, description = ?, ingredients = ?, method = ?, time = ?, difficulty = ?, servings = ?, vegetarian = ?, tags = ?, updated = datetime("now") WHERE recipe_id = ?',
-                (form.title.data, form.description.data, form.ingredients.data, form.method.data, form.time.data, form.difficulty.data, form.servings.data, form.vegetarian.data, form.tags.data, recipe_id)
-                )
-        db.commit()
+        recipes.update(
+            recipe_id,
+            form.title.data,
+            form.description.data,
+            form.time.data,
+            form.difficulty.data,
+            form.servings.data,
+            form.vegetarian.data,
+            form.ingredients.data.split('\r\n'),
+            form.method.data.split('\r\n\r\n'),
+            form.tags.data.split(',')
+        )
 
         return redirect(url_for('recipe.view', recipe_id=recipe_id))
     return render_template('recipe/update.html', form=form)
@@ -223,27 +257,19 @@ def update(recipe_id):
 @login_required
 def delete(recipe_id):
     form = DeleteForm()
-    db = get_db()
-
-    recipe = db.execute(
-            'SELECT * FROM recipe WHERE recipe_id = ?',
-            (recipe_id,)
-            ).fetchone()
+    
+    recipe = recipes.find_details(recipe_id)
 
     if recipe is None:
         abort(404)
-    elif g.user['user_id'] != recipe['user_id']:
+    elif g.user.id != recipe.user.id:
         abort(403)
 
     if request.method == 'POST' and form.validate():
-        if recipe['photo'] is not None:
-            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe['photo']))
+        if recipe.photo is not None:
+            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe.photo))
 
-        db.execute(
-                'DELETE FROM recipe WHERE recipe_id = ?',
-                (recipe_id,)
-                )
-        db.commit()
+        recipes.delete(recipe_id)
 
         flash('Recipe deleted successfully.', 'success')
         return redirect(url_for('recipe.index'))
@@ -255,21 +281,16 @@ def delete(recipe_id):
 @login_required
 def upload_photo(recipe_id):
     form = PhotoForm()
-    db = get_db()
-
-    recipe = db.execute(
-            'SELECT * FROM recipe WHERE recipe_id = ?',
-            (recipe_id,)
-            ).fetchone()
+    recipe = recipes.find_details(recipe_id)
     
     if recipe is None:
         abort(404)
-    elif g.user['user_id'] != recipe['user_id']:
+    elif g.user.id != recipe.user.id:
         abort(403)
 
     if request.method == 'POST' and form.validate():
-        if recipe['photo'] is not None:
-            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe['photo']))
+        if recipe.photo is not None:
+            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe.photo))
 
         photo = form.photo.data
         filename = str(uuid.uuid4()) + '.' + photo.filename.split('.')[-1]
@@ -281,11 +302,7 @@ def upload_photo(recipe_id):
         
         photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
 
-        db.execute(
-                'UPDATE recipe SET photo = ? WHERE recipe_id = ?',
-                (filename, recipe_id)
-                )
-        db.commit()
+        recipes.photo(recipe_id, filename)
 
         flash('Photo uploaded successfully.', 'success')
     else:
@@ -298,27 +315,18 @@ def upload_photo(recipe_id):
 @login_required
 def delete_photo(recipe_id):
     form = DeleteForm(request.form)
-    db = get_db()
-
-    recipe = db.execute(
-            'SELECT * FROM recipe WHERE recipe_id = ?',
-            (recipe_id,)
-            ).fetchone()
+    recipe = recipes.find_details(recipe_id)
 
     if recipe is None:
         abort(404)
-    elif g.user['user_id'] != recipe['user_id']:
+    elif g.user.id != recipe.user.id:
         abort(403)
 
     if request.method == 'POST' and form.validate():
-        if recipe['photo'] is not None:
-            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe['photo']))
+        if recipe.photo is not None:
+            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe.photo))
 
-            db.execute(
-                    'UPDATE recipe SET photo = NULL WHERE recipe_id = ?',
-                    (recipe_id,)
-                    )
-            db.commit()
+            recipes.photo(recipe_id, None)
 
             flash('Photo deleted successfully.', 'success')
         else:

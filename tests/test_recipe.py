@@ -5,7 +5,7 @@ import os
 
 from flask import current_app
 
-from sharecipe.db import get_db
+from sharecipe.database.database import get_db
 
 def test_index(client, auth):
     response = client.get('/recipe/')

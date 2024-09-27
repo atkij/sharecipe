@@ -49,7 +49,7 @@
 					<li class="nav-dropdown right">
 						<button>Account</button>
 						<div class="dropdown-content">
-							<a href="{{ url_for('user.index', user_id=g.user['user_id']) }}">Profile</a>
+							<a href="{{ url_for('user.index', user_id=g.user.id) }}">Profile</a>
 							<a href="{{ url_for('account.index') }}">Settings</a>
 							<a href="{{ return_url_for('auth.logout') }}">Log Out</a>
 						</div>
@@ -61,18 +61,18 @@
 					{% endblock %}
 				</ul>
 			</nav>
-
-			{% for category, message in get_flashed_messages(with_categories=true) %}
-			{{ alert(message|safe, class=category) }}
-			{% endfor %}
-			
-			{% if login_form %}
-			{% call modal('login', title='Login') %}
-			{{ render_form(login_form, 'Login', action=return_url_for('auth.login')) }}
-			{% endcall %}
-			{% endif %}
 			
 			<main>
+				{% for category, message in get_flashed_messages(with_categories=true) %}
+				{{ alert(message|safe, class=category) }}
+				{% endfor %}
+				
+				{% if login_form %}
+				{% call modal('login', title='Login') %}
+				{{ render_form(login_form, 'Login', action=return_url_for('auth.login')) }}
+				{% endcall %}
+				{% endif %}
+				
 				{% block main %}
 				<section>
 					{% block heading %}

@@ -2,7 +2,7 @@ import click
 from flask import current_app, g
 from sqlite3 import IntegrityError
 
-from sharecipe.db import get_db
+from sharecipe.database.database import get_db
 from sharecipe.util import generate_password_hash
 
 def register(name, help=None):

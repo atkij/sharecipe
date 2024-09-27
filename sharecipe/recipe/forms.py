@@ -52,6 +52,12 @@ class RecipeForm(FlaskForm):
         else:
             return ''
 
+class CommentForm(FlaskForm):
+    comment = TextAreaField('Comment', [
+        InputRequired(message='Comment is required'),
+        Length(max=400, message='Comment cannot be more than 400 characters'),
+        ], description='Submit a new comment')
+
 # form for uploading recipe photo
 class PhotoForm(FlaskForm):
     photo = FileField('Photo', [
@@ -63,6 +69,9 @@ class RateForm(FlaskForm):
     rating = RadioField('Rating', [
         InputRequired(message='Please provide a rating'),
         ], choices=[('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5')], description='Rate this recipe out of 5')
+
+class FavouriteForm(FlaskForm):
+    pass
 
 class DeleteForm(FlaskForm):
     pass

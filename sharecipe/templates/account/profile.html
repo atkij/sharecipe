@@ -29,7 +29,7 @@
 	{{ form.csrf_token }}
 	
 	<div class="update-profile-pic-container">
-		{{ profile_pic(g.user) }}
+		{{ profile_pic(g.profile) }}
 		<div class="profile-pic-buttons">
 			{{ modal_button('update-profile-pic', 'Update') }}
 			{{ modal_button('delete-profile-pic', 'Delete') }}

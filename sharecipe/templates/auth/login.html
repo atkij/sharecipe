@@ -3,23 +3,5 @@
 {% block title %}Log In{% endblock %}
 
 {% block content %}
-{#<form method="post">
-	{{ form.csrf_token }}
-	<div>
-		{{ form.username()|safe }}
-		{{ form.username.label|safe }}
-		<div class="help"><span class="right">{{ form.username.description }}</span></div>
-		<div class="error">{% for error in form.username.errors %}<span class="error">{{ error }}</span>{% endfor %}</div>
-	</div>
-
-	<div>
-		{{ form.password()|safe }}
-		{{ form.password.label|safe }}
-		<div class="help"><span class="right">{{ form.password.description }}</span></div>
-		{% for error in form.password.errors %}<span class="error">{{ error }}</span>{% endfor %}
-	</div>
-
-	<input type="submit" value="Log In">
-</form>#}
 {{ render_form(form, "Log In") }}
 {% endblock %}

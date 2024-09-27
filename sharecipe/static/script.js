@@ -64,6 +64,21 @@ function registerPrintBtn(btn) {
 	});
 }
 
+function registerRecipeView(recipe, details, comments) {
+	const f = () => {
+		if (window.innerWidth >= 1400) {
+			h = details.offsetHeight + comments.offsetHeight;
+			recipe.style.height = Math.ceil(h+1).toString() + "px";
+		} else {
+			recipe.style.height = "auto";
+		}
+	}
+
+	window.addEventListener("resize", f);
+
+	f();
+}
+
 function Slideshow(slideshow) {
 	this.slideshow = slideshow;
 	this.slides = this.slideshow.getElementsByClassName("slide");
@@ -151,5 +166,12 @@ function registerSlideshow(slideshow) {
 	let printBtns = document.getElementsByClassName("print");
 	for (let i = 0; i < printBtns.length; i++) {
 		registerPrintBtn(printBtns[i]);
+	}
+
+	let recipeView = document.getElementsByClassName("recipe");
+	let detailView = document.getElementsByClassName("recipe-details");
+	let commentView = document.getElementsByClassName("recipe-comments");
+	if (recipeView.length > 0 && detailView.length > 0 && commentView.length > 0) {
+		registerRecipeView(recipeView[0], detailView[0], commentView[0]);
 	}
 })();

@@ -2,6 +2,8 @@ import hashlib
 import os
 import functools
 
+from flask import g, url_for, request, redirect
+
 def _hash_internal(password, salt, n=16384, r=8, p=1):
     maxmem = 132 * n * r * p
     password = password.encode('utf-8')
@@ -28,8 +30,7 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(*args, **kwargs):
         if g.user is None:
-            next = url_for(request.endpoint, **request.view_args, **request.args)
-            return redirect(url_for('auth.login'))
+            return_url = url_for(request.endpoint, **request.view_args, **request.args)
+            return redirect(url_for('auth.login', return_url=return_url))
         return view(*args, **kwargs)
     return wrapped_view
-

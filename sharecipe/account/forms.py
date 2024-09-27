@@ -43,7 +43,7 @@ class PasswordCheck(object):
         self.message = message
 
     def __call__(self, form, field):
-        if g.user is not None and check_password_hash(g.user['password'], field.data):
+        if g.user is not None and check_password_hash(g.user.password, field.data):
             return
 
         message = self.message

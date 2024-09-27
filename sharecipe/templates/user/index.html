@@ -1,24 +1,32 @@
 {% extends 'base.html' %}
 {% from 'macros.html' import profile_pic, user_link, recipe_scroll, tab_view, tab, tab_link, tab_seperator %}
-{% block title %}{{ user|name }}{% endblock %}
+{% block title %}{{ profile.name }}{% endblock %}
 
-{% block meta_description %}{{ user['bio'] or user['username'] }}{% endblock %}
-{% block meta_image %}{% if user['picture'] %}{{ url_for('upload', filename=user['picture']) }}{% else %}{{ super() }}{% endif %}{% endblock %}
+{% block meta_description %}{{ profile.bio or profile.name }}{% endblock %}
+{% block meta_image %}{% if profile.picture %}{{ url_for('upload', filename=profile.picture) }}{% else %}{{ super() }}{% endif %}{% endblock %}
 {% block meta_type %}profile{% endblock %}
 
 {% block heading %}
-<div class="profile-pic-left">{{ profile_pic(user) }}</div>
+<div class="profile-pic-left">{{ profile_pic(profile) }}</div>
 <div class="profile-details">
 	<h2>{{ self.title() }}</h1>
-	<p class="info-horizontal"><span>{{ user['username'] }}</span>&bull;<span>Joined {{ joined }}</span>&bull;<span>Active {% if active > 0 %}{{ active }} days ago{% else %}today{% endif %}</span></p>
+	<p class="info-horizontal">
+		<span>Joined {{ profile.joined }}</span>
+		&bull;
+		<span>Active {{ profile.active }}</span>
+	</p>
 </div>
 {% endblock %}
 
 {% block content %}
-{% if user['bio'] %}<p>{{ user['bio']|default('', true) }}</p>{% endif %}
+{% if profile.bio %}<p>{{ profile.bio }}</p>{% endif %}
 
-{% if recipes %}
-{{ recipe_scroll(recipes, 'Recipes', {'user_id': user['user_id']}) }}
+{% if latest_recipes %}
+{{ recipe_scroll(latest_recipes, 'Recipes', {'user_id': profile.id}) }}
+{% endif %}
+
+{% if favourite_recipes %}
+{{ recipe_scroll(favourite_recipes, 'Favourite Recipes', {'user_id': profile.id}) }}
 {% endif %}
 
 {% call tab_view() %}
@@ -37,8 +45,8 @@
 
 {{ tab_seperator() }}
 
-{% if g.user and g.user['user_id'] != user['user_id'] %}
-{{ tab_link('Unfollow', url_for('user.unfollow', user_id=user['user_id'])) if follows else tab_link('Follow', url_for('user.follow', user_id=user['user_id'])) }}
+{% if follows is not none %}
+{{ tab_link('Unfollow', url_for('user.unfollow', user_id=profile.id)) if follows else tab_link('Follow', url_for('user.follow', user_id=profile.id)) }}
 {% endif %}
 
 {% endcall %}

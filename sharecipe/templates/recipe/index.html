@@ -23,7 +23,13 @@
 
 <section>
 	{% if user_recipes %}
-	{{ recipe_scroll(user_recipes, 'My Recipes', {'user_id': g.user['user_id']}) }}
+	{{ recipe_scroll(user_recipes, 'My Recipes', {'user_id': g.user.id}) }}
+	{% endif %}
+</section>
+
+<section>
+	{% if favourite_recipes %}
+	{{ recipe_scroll(favourite_recipes, 'Favourite Recipes', {'favourite_id': g.user.id}) }}
 	{% endif %}
 </section>
 

@@ -7,10 +7,6 @@ from urllib.parse import urlparse, urljoin
 
 from flask import abort, current_app, g, redirect, session, url_for, request
 
-
-def name_filter(user):
-    return user['name'] if user['name'] else user['username']
-
 def return_url_for_global(endpoint, *, _anchor=None, _method=None, _scheme=None, _external=None, **values):
     return_url = url_for(request.endpoint, **request.view_args, **request.args)
     return url_for(endpoint, _anchor=_anchor, _method=_method, _scheme=_scheme, _external=_external, return_url=return_url, **values)

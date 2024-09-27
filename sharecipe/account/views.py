@@ -1,12 +1,12 @@
-from flask import current_app, flash, g, redirect, render_template, request, session, url_for
-
-from datetime import datetime
+from dataclasses import asdict
 import os
 import uuid
 
-from sharecipe.db import get_db
-from sharecipe.util import resize_image
-from sharecipe.auth.helpers import check_password_hash, generate_password_hash, login_required
+from flask import current_app, flash, g, redirect, render_template, request, session, url_for
+
+from ..auth.helpers import generate_password_hash, login_required
+from ..database import profiles, users
+from ..util import resize_image
 
 from . import account_blueprint as bp
 from .forms import UpdateProfileForm, UploadPictureForm, DeletePictureForm, UpdatePasswordForm, DeleteAccountForm
@@ -19,17 +19,21 @@ def index():
 @bp.route('/profile', methods=('GET', 'POST'))
 @login_required
 def profile():
-    form = UpdateProfileForm(request.form, data=g.user)
+    form = UpdateProfileForm(request.form, data=asdict(g.profile) | asdict(g.user))
 
     if request.method == 'POST' and form.validate():
-        db = get_db()
-        db.execute(
-                'UPDATE user SET name = ?, email = ?, bio = ? WHERE user_id = ?',
-                (form.name.data, form.email.data, form.bio.data, g.user['user_id'])
-                )
-        db.commit()
+        profiles.update(g.user.id, form.name.data, g.profile.picture, form.bio.data)
 
-        flash('Profile updated successfully.', 'success')
+        if form.email.data != g.user.email:
+            user = users.find(email=form.email.data)
+
+            if user is None:
+                users.update(g.user.id, form.email.data, g.user.password, False)
+                flash('Profile updated successfully', 'success')
+            else:
+                flash('Account with email address already exists', 'error')
+        else:
+            flash('Profile updated successfully', 'success')
 
         return redirect(url_for('account.index'))
 
@@ -40,19 +44,14 @@ def profile():
             )
 
 def _delete_picture():
-    if g.user['picture'] is None:
+    if g.profile.picture is None:
         return
 
     filename = os.path.join(current_app.config['UPLOAD_FOLDER'] , g.user['picture'])
     if os.path.exists(filename):
         os.remove(filename)
 
-    db = get_db()
-    db.execute(
-            'UPDATE user SET picture = NULL WHERE user_id = ?',
-            (g.user['user_id'],)
-            )
-    db.commit()
+    profiles.update(g.user.id, g.profile.name, None, g.profile.bio)
 
 @bp.route('/picture/upload', methods=('GET', 'POST'))
 @login_required
@@ -71,13 +70,8 @@ def upload_picture():
             return redirect(url_for('account.index'))
 
         picture.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-        
-        db = get_db()
-        db.execute(
-                'UPDATE user SET picture = ? WHERE user_id = ?',
-                (filename, g.user['user_id'])
-                )
-        db.commit()
+
+        profiles.update(g.user.id, g.profile.name, filename, g.profile.bio)
 
         flash('Profile picture updated successfully.', 'success')
     else:
@@ -91,7 +85,7 @@ def upload_picture():
 def delete_picture():
     form = DeletePictureForm(request.form)
 
-    if request.method == 'POST' and g.user['picture'] and form.validate():
+    if request.method == 'POST' and g.profile.picture and form.validate():
         _delete_picture()
 
         flash('Profile picture deleted successfully.', 'success')
@@ -104,13 +98,7 @@ def password():
     form = UpdatePasswordForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        db = get_db()
-
-        db.execute(
-                'UPDATE user SET password = ? WHERE user_id = ?',
-                (generate_password_hash(form.new_password.data), g.user['user_id'])
-                )
-        db.commit()
+        users.update(g.user.id, g.user.email, generate_password_hash(form.new_password.data), g.user.verified)
 
         flash('Password updated successfully.', 'success')
 
@@ -126,12 +114,11 @@ def delete():
     if request.method == 'POST' and form.validate():
         _delete_picture()
 
-        db = get_db()
-        db.execute('DELETE FROM user WHERE user_id = ?', (g.user['user_id'],))
-        db.commit()
+        users.delete(g.user.id)
 
         session.clear()
         g.user = None
+        g.profile = None
 
         flash('Account deleted successfully.', 'success')
 

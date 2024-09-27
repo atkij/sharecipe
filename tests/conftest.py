@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 from sharecipe import create_app
-from sharecipe.db import get_db, init_db
+from sharecipe.database.database import get_db, init_db
 
 with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
     _data_sql = f.read().decode('utf-8')

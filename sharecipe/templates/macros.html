@@ -47,28 +47,28 @@
 {%- endmacro %}
 
 {% macro profile_pic(user, size=None) -%}
-<img class="profile-pic {{ size if size else '' }}" src="{{ url_for('upload', filename=user['picture']) if user['picture'] else url_for('static', filename='profile.svg') }}">
+<img class="profile-pic {{ size if size else '' }}" src="{{ url_for('upload', filename=user.picture) if user.picture else url_for('static', filename='profile.svg') }}">
 {%- endmacro %}
 
 {% macro user_link(user, seperator=True) -%}
 <div class="user-link {{ 'seperator' if seperator }}">
 	<div class="profile-pic-container">{{ profile_pic(user) }}</div>
-	<a href="{{ url_for('user.index', user_id=user['user_id']) }}"><span>{{ user|name }}</span></a>
+	<span><a href="{{ url_for('user.index', user_id=user.id) }}">{{ user.name }}</a></span>
 </div>
 {%- endmacro %}
 
 {% macro recipe_card(recipe) -%}
 <div class="recipe-card">
-		<h2><a href="{{ url_for('recipe.view', recipe_id=recipe['recipe_id']) }}">{{ recipe['title'] }}</a></h2>
-		<p class="recipe-author">By <a href="{{ url_for('user.index', user_id=recipe['user_id']) }}">{{ recipe|name }}</a></p>
+		<h2><a href="{{ url_for('recipe.view', recipe_id=recipe.id) }}">{{ recipe.title }}</a></h2>
+		<p class="recipe-author">By <a href="{{ url_for('user.index', user_id=recipe.user.id) }}">{{ recipe.user.name }}</a></p>
 		<div class="recipe-info">
-			{% if recipe['servings'] %}<span>Serves {{ recipe['servings'] }}</span>{% endif %}
-			{% if recipe['time'] %}<span>{{ recipe['time'] }} minutes</span>{% endif %}
-			{% if recipe['difficulty'] %}<span>{% if recipe['difficulty'] == 1 %}Easy{% elif recipe['difficulty'] == 2 %}Medium{% else %}Hard{% endif %}</span>{% endif %}
-			{% if recipe['vegetarian'] %}<span class="vegetarian"></span>{% endif %}
-			{% if not recipe['servings'] and not recipe['time'] and not recipe['difficulty'] and not recipe['vegetarian'] %}<span>No details</span>{% endif %}
+			{% if recipe.servings %}<span>Serves {{ recipe.servings }}</span>{% endif %}
+			{% if recipe.time %}<span>{{ recipe.time }} minutes</span>{% endif %}
+			{% if recipe.difficulty %}<span>{{ {1: 'Easy', 2: 'Medium', 3: 'Hard'}[recipe.difficulty] }}</span>{% endif %}
+			{% if recipe.vegetarian %}<span class="vegetarian"></span>{% endif %}
+			{% if not recipe.servings and not recipe.time and not recipe.difficulty and not recipe.vegetarian %}<span>No details</span>{% endif %}
 		</div>
-		<p class="recipe-description">{{ recipe['description'] if recipe['description'] else 'No description' }}</p>
+		<p class="recipe-description">{{ recipe.description if recipe.description else 'No description' }}</p>
 	</div>
 
 {%- endmacro %}
@@ -95,6 +95,18 @@
 	{% endfor %}
 	<input type="submit" value="Search">
 </form>
+{%- endmacro %}
+
+{% macro pagination_links(pagination, params) -%}
+<div class="pagination">
+	<a href="{{ url_for(request.endpoint, page=1, **params) }}">&laquo;</a>
+	<a href="{{ url_for(request.endpoint, page=pagination['page'] - 1, **params) }}">&lsaquo;</a>
+	{% for pagenum in range(1, pagination['pages'] + 1) %}
+	<a class="{{ 'active' if pagenum == pagination['page'] else '' }}" href="{{ url_for(request.endpoint, page=pagenum, **params) }}">{{ pagenum }}</a>
+	{% endfor %}
+	<a href="{{ url_for(request.endpoint, page=pagination['page'] + 1, **params) }}">&rsaquo;</a>
+	<a href="{{ url_for(request.endpoint, page=pagination['pages'], **params) }}">&raquo;</a>
+</div>
 {%- endmacro %}
 
 {% macro tab_view() -%}

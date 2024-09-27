@@ -1,5 +1,5 @@
 from datetime import datetime
-from sharecipe.db import get_db
+from sharecipe.database.database import get_db
 
 def test_index(client, auth):
     assert client.get('/user/3').status_code == 404

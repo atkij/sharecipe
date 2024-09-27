@@ -1,70 +1,76 @@
 from flask import flash, g, redirect, render_template, request, session, url_for
 
-from sharecipe.db import get_db
-from sharecipe.util import  get_safe_redirect
+from ..database import users, profiles
+from ..util import get_safe_redirect
 
-from . import auth_blueprint
-from .forms import LoginForm, RegisterForm
-from .helpers import check_password_hash, generate_password_hash
+from .forms import LoginForm, RegisterForm, VerifyForm
+from . import controllers as c
 
-@auth_blueprint.route('/register', methods=('GET', 'POST'))
+from . import auth_blueprint as bp
+
+@bp.route('/register', methods=('GET', 'POST'))
 def register():
     form = RegisterForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        db = get_db()
-
         try:
-            res = db.execute(
-                    'INSERT INTO user (username, password, email, name, last_login) VALUES (?, ?, ?, ?, datetime("now"))',
-                    (form.username.data, generate_password_hash(form.password.data), form.email.data, form.name.data)
-                    )
-            db.commit()
-        except db.IntegrityError:
-            flash(f'Account already exists.', 'error')
-        else:
             session.clear()
-            session['user_id'] = res.lastrowid
-
-            flash('Account created successfully!  Get started by <a href="{}">searching</a> for recipes.'.format(url_for('recipe.index')), 'success')
-            return redirect(get_safe_redirect(request.args.get('return_url')))
+            session['user_id'] = c.register(form.name.data, form.email.data, form.password.data)
+            return redirect(url_for('auth.verify', return_url=request.args.get('return_url')))
+        except c.AccountError as e:
+            flash(e, 'error')
+    
     return render_template('auth/register.html', form=form)
 
-@auth_blueprint.route('/login', methods=('GET', 'POST'))
+@bp.route('/login', methods=('GET', 'POST'))
 def login():
     form = LoginForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        db = get_db()
-        user = db.execute(
-                'SELECT * FROM user WHERE username = ?', (form.username.data,)
-                ).fetchone()
-
-        if not user or not check_password_hash(user['password'], form.password.data):
-            flash('Incorrect username or password.', 'error')
-        else:
+        try:
             session.clear()
-            session['user_id'] = user['user_id']
-
-            db.execute('UPDATE user SET last_login = datetime("now") WHERE user_id = ?', (user['user_id'],))
-            db.commit()
-
+            session['user_id'] = c.login(form.email.data, form.password.data)
             return redirect(get_safe_redirect(request.args.get('return_url')))
+        except c.LoginError as e:
+            flash(e, 'error')
+
     return render_template('auth/login.html', form=form)
 
-@auth_blueprint.route('/logout')
+@bp.route('/verify', methods=('GET', 'POST'))
+def verify():
+    form = VerifyForm(request.form)
+
+    if session.get('user_id') is None:
+        return redirect(url_for('auth.login', return_url=request.args.get('return_url')))
+
+    if request.method == 'POST' and form.validate():
+        try:
+            c.verify(session.get('user_id'), form.code.data)
+            flash('Email verification complete', 'success')
+            return redirect(get_safe_redirect(request.args.get('return_url')))
+        except c.VerifyError as e:
+            flash(e, 'error')
+    else:
+        code, expires = c.x_verify(session.get('user_id'))
+
+    return render_template('auth/verify.html', form=form)
+
+@bp.route('/logout')
 def logout():
     session.clear()
-    return redirect(get_safe_redirect(request.args.get('next')))
+    return redirect(get_safe_redirect(request.args.get('return_url')))
 
-@auth_blueprint.before_app_request
+@bp.before_app_request
 def load_user():
     user_id = session.get('user_id')
 
     if user_id is None:
         g.user = None
+        g.profile = None
     else:
-        g.user = get_db().execute(
-                'SELECT user.* FROM user WHERE user.user_id = ?', (user_id,)
-                ).fetchone()
+        g.user = users.find(user_id)
 
+        if not g.user.verified:
+            g.user = None
+        else:
+            g.profile = profiles.find(user_id)
