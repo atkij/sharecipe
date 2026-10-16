@@ -1,0 +1,20 @@
+{% macro draggable_input(id, position, content) %}
+    <draggable-input>
+        <template shadowroot="open">
+            <li draggable="true">
+                <slot name="id"></slot>
+                <slot name="position"></slot>
+                <slot name="content"></slot>
+                <slot name="add"></slot>
+                <slot name="delete"></slot>
+                <slot name="move"></slot>
+            </li>
+        </template>
+        {{ id(slot='id') }}
+        {{ position(slot='position') }}
+        {{ content(slot='content') }}
+        <button slot="add" id="add" class="button light" type="button"><i class="bi bi-plus-circle"></i></button>
+        <button slot="delete" id="delete" class="button light" type="button"><i class="bi bi-trash"></i></button>
+        <button slot="move" id="move" class="button light" type="button"><i class="bi bi-arrows-expand"></i></button>
+    </draggable-input>
+{% endmacro %}

@@ -32,5 +32,8 @@ def login_required(view):
         if g.user is None:
             return_url = url_for(request.endpoint, **request.view_args, **request.args)
             return redirect(url_for('auth.login', return_url=return_url))
+        elif not g.user.verified:
+            return_url = url_for(request.endpoint, **request.view_args, **request.args)
+            return redirect(url_for('auth.verify', return_url=return_url))
         return view(*args, **kwargs)
     return wrapped_view

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import profile_pic, user_link, recipe_scroll %}
+{% block title %}{{ profile.name }}{% endblock %}
+
+{% block meta_description %}{{ profile.bio or profile.name }}{% endblock %}
+{% block meta_image %}{% if profile.picture %}{{ url_for('upload', filename=profile.picture) }}{% else %}{{ super() }}{% endif %}{% endblock %}
+{% block meta_type %}profile{% endblock %}
+
+{% block heading %}
+<div class="profile-pic-left">{{ profile_pic(profile) }}</div>
+<div class="profile-details">
+	<h2>{{ self.title() }}</h1>
+	<p class="info-horizontal">
+		<span>Joined</span>
+		&bull;
+		<span>Active</span>
+	</p>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if profile.bio %}<p>{{ profile.bio }}</p>{% endif %}
+
+{% if latest_recipes %}
+{{ recipe_scroll(latest_recipes, 'Recipes', {'user_id': profile.id}) }}
+{% endif %}
+
+{% if starred_recipes %}
+{{ recipe_scroll(starred_recipes, 'Starred Recipes', {'user_id': profile.id}) }}
+{% endif %}
+
+{% endblock %}

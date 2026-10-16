@@ -12,24 +12,19 @@
 {% macro render_form(form, name, action='', upload=False) -%}
 <form method="post" action="{{ action }}" {{ 'enctype="multipart/form-data"'|safe if upload }}>
 	{% for field in form %}
-	{% if field.type in ['HiddenField', 'CSRFTokenField'] %}
-	{{ field()|safe }}
-	{% else %}
-	<div>
-		{{ field()|safe }}
-		{{ field.label|safe }}
-		<div class="help"><span class="right">{{ field.description }}</span></div>
-		<div class="error">{% for error in field.errors %}<span class="error">{{ error }}</span>{% endfor %}</div>
-	</div>
-	{% endif %}
+		{% if field.type in ['HiddenField', 'CSRFTokenField'] %}
+			{{ field()|safe }}
+		{% else %}
+			{{ render_field(field) }}
+		{% endif %}
 	{% endfor %}
 	<input type="submit" value="{{ name }}">
 </form>
 {%- endmacro %}
 
-{% macro render_field(field) -%}
+{% macro render_field(field, placeholder='') -%}
 <div>
-	{{ field()|safe }}
+	{{ field(placeholder=placeholder)|safe }}
 	{{ field.label|safe }}
 	{{ help(field.description) }}
 	<div class="error">{% for error in field.errors %}<span class="error">{{ error }}</span>{% endfor %}</div>
@@ -46,27 +41,27 @@
 </div>
 {%- endmacro %}
 
-{% macro profile_pic(user, size=None) -%}
-<img class="profile-pic {{ size if size else '' }}" src="{{ url_for('upload', filename=user.picture) if user.picture else url_for('static', filename='profile.svg') }}">
+{% macro profile_pic(profile, size=None) -%}
+<img class="profile-pic {{ size if size else '' }}" src="{{ url_for('upload', filename=profile.picture) if profile.picture else url_for('static', filename='profile.svg') }}">
 {%- endmacro %}
 
-{% macro user_link(user, seperator=True) -%}
+{% macro profile_link(profile, seperator=True) -%}
 <div class="user-link {{ 'seperator' if seperator }}">
-	<div class="profile-pic-container">{{ profile_pic(user) }}</div>
-	<span><a href="{{ url_for('user.index', user_id=user.id) }}">{{ user.name }}</a></span>
+	<div class="profile-pic-container">{{ profile_pic(profile) }}</div>
+	<span><a href="{{ url_for('profile.index', id=profile.id) }}">{{ profile.name }}</a></span>
 </div>
 {%- endmacro %}
 
 {% macro recipe_card(recipe) -%}
 <div class="recipe-card">
 		<h2><a href="{{ url_for('recipe.view', recipe_id=recipe.id) }}">{{ recipe.title }}</a></h2>
-		<p class="recipe-author">By <a href="{{ url_for('user.index', user_id=recipe.user.id) }}">{{ recipe.user.name }}</a></p>
+		<p class="recipe-author">By <a href="{{ url_for('profile.index', id=recipe.user_id) }}">{{ recipe.profile.name }}</a></p>
 		<div class="recipe-info">
-			{% if recipe.servings %}<span>Serves {{ recipe.servings }}</span>{% endif %}
-			{% if recipe.time %}<span>{{ recipe.time }} minutes</span>{% endif %}
-			{% if recipe.difficulty %}<span>{{ {1: 'Easy', 2: 'Medium', 3: 'Hard'}[recipe.difficulty] }}</span>{% endif %}
+			{% if recipe.prepare %}<span>Prepare: {{ recipe.prepare }} minutes</span>{% endif %}
+			{% if recipe.cook %}<span>Cook: {{ recipe.cook }} minutes</span>{% endif %}
+			{% if recipe.serves %}<span>Serves: {{ recipe.serves }}</span>{% endif %}
 			{% if recipe.vegetarian %}<span class="vegetarian"></span>{% endif %}
-			{% if not recipe.servings and not recipe.time and not recipe.difficulty and not recipe.vegetarian %}<span>No details</span>{% endif %}
+			{% if not recipe.prepare and not recipe.cook and not recipe.serves and not recipe.vegetarian %}<span>No details</span>{% endif %}
 		</div>
 		<p class="recipe-description">{{ recipe.description if recipe.description else 'No description' }}</p>
 	</div>

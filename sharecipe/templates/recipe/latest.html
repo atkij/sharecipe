@@ -16,11 +16,11 @@ Latest Recipes
 	{{ recipe_search(params=filters) }}
 </section>
 
-{% if latest_recipes %}
+{% if recipes %}
 <p>Showing {{ pagination['offset'] + 1 }} &ndash; {{ (pagination['offset'] + pagination['limit'], pagination['count'])|min }} of {{ pagination['count'] }} recipes</p>
 
 <div class="recipe-list">
-	{% for recipe in latest_recipes %}
+	{% for recipe in recipes %}
 	{{ recipe_card(recipe) }}
 	{% endfor %}
 </div>

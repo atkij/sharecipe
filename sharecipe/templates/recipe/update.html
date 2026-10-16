@@ -1,10 +1,55 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import render_form %}
+{% from 'macros.html' import render_field %}
 {% block title %}Update Recipe{% endblock %}
 
 {% block content %}
-{{ render_form(form, 'Update Recipe') }}
-{% endblock %}
+<form method="post" action="">
+    {{ form.csrf_token }}
+
+    {{ render_field(form.title) }}
+    {{ render_field(form.description) }}
+    {{ render_field(form.prepare) }}
+    {{ render_field(form.cook) }}
+    {{ render_field(form.serves) }}
+    {{ render_field(form.vegetarian) }}
+
+    <div style="display: block;">
+        <h3>Ingredients</h3>
+        {% for part in form.parts %}
+            <div>
+                {{ part.form.id }}
+                {{ part.form.position }}
+                {{ part.form.name }}
+                <ul>
+                    {% for ingredient in part.form.ingredients %}
+                        <li>
+                            {{ ingredient.form.id }}
+                            {{ ingredient.form.position }}
+                            {{ ingredient.form.ingredient }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div>
+        <h3>Method</h3>
+        <ol>
+            {% for instruction in form.method %}
+                <li>
+                    {{ instruction.form.id }}
+                    {{ instruction.form.position }}
+                    {{ instruction.form.instruction }}
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+
+    {{ render_field(form.tags) }}
+
+    <input type="submit" value="Update Recipe">
+</form>{% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='recipe.js') }}"></script>

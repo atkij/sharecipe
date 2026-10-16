@@ -28,8 +28,8 @@
 </section>
 
 <section>
-	{% if favourite_recipes %}
-	{{ recipe_scroll(favourite_recipes, 'Favourite Recipes', {'favourite_id': g.user.id}) }}
+	{% if starred_recipes %}
+	{{ recipe_scroll(starred_recipes, 'Starred Recipes', {'starred_id': g.user.id}) }}
 	{% endif %}
 </section>
 

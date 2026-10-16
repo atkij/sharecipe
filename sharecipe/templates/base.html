@@ -49,8 +49,8 @@
 					<li class="nav-dropdown right">
 						<button>Account</button>
 						<div class="dropdown-content">
-							<a href="{{ url_for('user.index', user_id=g.user.id) }}">Profile</a>
-							<a href="{{ url_for('account.index') }}">Settings</a>
+							<a href="{{ url_for('profile.index', id=g.user.id) }}">Profile</a>
+							<a href="{{ url_for('settings.index') }}">Settings</a>
 							<a href="{{ return_url_for('auth.logout') }}">Log Out</a>
 						</div>
 					</li>

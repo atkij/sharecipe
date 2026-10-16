@@ -1,7 +1,5 @@
 from flask import Blueprint, render_template
 
-from ..database import recipes
-
 bp = Blueprint('main', __name__)
 
 @bp.route('/')
@@ -18,7 +16,7 @@ def index():
     #        'SELECT user.* FROM user INNER JOIN follower ON user.user_id = follower.user_id INNER JOIN recipe ON user.user_id = recipe.user_id GROUP BY user.user_id ORDER BY COUNT(follower.follower_id) * COUNT(recipe.recipe_id) DESC LIMIT 10'
     #        ).fetchall()
 
-    latest_recipes = recipes.find()
+    latest_recipes = [] #recipes.find()
 
     return render_template('main/index.html', latest_recipes=latest_recipes)
 

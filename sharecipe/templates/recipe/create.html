@@ -1,9 +1,63 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import render_form %}
+{% from 'macros.html' import render_form, render_field %}
+{% from 'include/components.html' import draggable_input %}
 {% block title %}New Recipe{% endblock %}
 
 {% block content %}
-{{ render_form(form, 'Create Recipe') }}
+{# {{ render_form(form, 'Create Recipe') }} #}
+
+<form method="post" action="">
+    {{ form.csrf_token }}
+
+    {{ render_field(form.title, placeholder='e.g. Apple Crumble') }}
+    {{ render_field(form.description, placeholder='e.g. Delicious pudding made from cooking apples.') }}
+    {{ render_field(form.prepare, placeholder='e.g. 30 mins') }}
+    {{ render_field(form.cook, placeholder='e.g. 1 hr') }}
+    {{ render_field(form.serves, placeholder='e.g. 8 - 10 people') }}
+    {{ render_field(form.vegetarian) }}
+
+    <div style="display: block;">
+        <h3>Ingredients</h3>
+        {% for part in form.parts %}
+            <div draggable="true">
+                {{ part.form.id }}
+                {{ part.form.position }}
+                {{ part.form.name(placeholder='e.g. For the base') }}
+                <ul>
+                    {% for ingredient in part.ingredients %}
+                        <li draggable="true">
+                            {{ ingredient.form.id }}
+                            {{ ingredient.form.position }}
+                            {{ ingredient.form.ingredient(placeholder='e.g. Cooking apples') }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div>
+        <h3>Method</h3>
+        <ol id="method-list">
+            {% for instruction in form.method %}
+                <!-- <li draggable="true">
+                    {{ instruction.form.id }}
+                    {{ instruction.form.position }}
+                    {{ instruction.form.instruction(placeholder='e.g. Mix the apples and the sugar.') }}
+                    <button class="button light" type="button"><i class="bi bi-plus-circle"></i></button>
+                    <button class="button light" type="button"><i class="bi bi-trash"></i></button>
+                    <button class="button light" type="button"><i class="bi bi-arrows-expand"></i></button>
+                </li> -->
+                {{ draggable_input(instruction.form.id, instruction.form.position, instruction.form.instruction) }}
+            {% endfor %}
+        </ol>
+    </div>
+
+    {{ render_field(form.tags) }}
+
+    <input type="submit" value="Create Recipe">
+</form>
+
 {% endblock %}
 
 {% block scripts %}

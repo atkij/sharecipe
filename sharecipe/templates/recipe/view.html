@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import help, modal, profile_pic, render_form, user_link %}
+{% from 'macros.html' import help, modal, profile_pic, render_form, profile_link %}
 {% block title %}{{ recipe.title }}{% endblock %}
 
 {% block head %}
@@ -13,7 +13,7 @@
 
 {% block heading %}
 {{ super() }}
-{% if g.user and g.user.id == recipe.user.id %}
+{% if g.user and g.user.id == recipe.user_id %}
 <div class="dropdown right">
 	<button class="dropdown-button button round light"><i class="bi bi-three-dots-vertical"></i></button>
 	<div class="dropdown-content">
@@ -29,18 +29,18 @@
 {% endif %}
 <a class="print button round light right" title="Print"><i class="bi bi-printer-fill"></i></a>
 {% if g.user %}
-{% if recipe.favourite %}
-<form method="post" action="{{ url_for('recipe.unfavourite', recipe_id=recipe.id) }}" class="inline">
-	{{ favourite_form.csrf_token }}
-	<button class="button light round right" title="Unfavourite" type="submit">
-		<i class="bi bi-heart-fill"></i>
+{% if recipe.starred %}
+<form method="post" action="{{ url_for('recipe.unstar', recipe_id=recipe.id) }}" class="inline">
+	{{ star_form.csrf_token }}
+	<button class="button light round right" title="Unstar" type="submit">
+		<i class="bi bi-star-fill"></i>
 	</button>
 </form>
 {% else %}
-<form method="post" action="{{ url_for('recipe.favourite', recipe_id=recipe.id) }}" class="inline">
-	{{ favourite_form.csrf_token }}
+<form method="post" action="{{ url_for('recipe.star', recipe_id=recipe.id) }}" class="inline">
+	{{ star_form.csrf_token }}
 	<button class="button light round right" title="Favourite" type="submit">
-		<i class="bi bi-heart"></i>
+		<i class="bi bi-star"></i>
 	</button>
 </form>
 {% endif %}
@@ -48,7 +48,7 @@
 {% endblock %}
 
 {% block content %}
-{% if g.user and g.user.id == recipe.user.id %}
+{% if g.user and g.user.id == recipe.user_id %}
 
 {% call modal('upload-photo', title='Upload Photo') %}
 {{ render_form(upload_photo_form, 'Upload Photo', action=url_for('recipe.upload_photo', recipe_id=recipe.id), upload=True) }}
@@ -66,57 +66,16 @@
 {{ render_form(delete_form, 'Delete Recipe', action=url_for('recipe.delete', recipe_id=recipe.id)) }}
 {% endcall %}
 
-{% elif g.user %}
-
-{% call modal('rate', title='Rate Recipe') %}
-<form action="{{ url_for('recipe.rate', recipe_id=recipe.id) }}" method="post">
-	{{ rate_form.csrf_token }}
-	<div class="rating">
-		{% for item in rate_form.rating|reverse %}
-		{{ item()|safe }}
-		<label for="{{ item.id }}"><i class="bi bi-star"></i><i class="bi bi-star-fill"></i></label>
-		{% endfor %}
-	</div>
-	<input type="submit" value="Rate Recipe">
-</form>
-{% endcall %}
-
 {% endif %}
 
 <div class="recipe">
 	<div class="recipe-details">
-		{{ user_link(recipe.user, seperator=False) }}
-
-		<div class="recipe-info rating">
-			{% if recipe.rating %}
-			<span>{% for i in range(1, 6) %}
-			{% if recipe.rating|float >= i %}
-			<i class="bi bi-star-fill"></i>
-			{% elif recipe.rating|float >= (i - 0.5) %}
-			<i class="bi bi-star-half"></i>
-			{% else %}
-			<i class="bi bi-star"></i>
-			{% endif %}
-			{% endfor %}
-			({{ recipe.rating|round(1) }})
-			</span>
-			{% endif %}
-			<span>
-				{% if recipe.ratings == 1 %}
-				{{ recipe.ratings ~ ' rating' }}
-				{% elif recipe.ratings %}
-				{{ recipe.ratings ~ ' ratings' }}
-				{% else %}
-				No ratings
-				{% endif %}
-			</span>
-			{% if g.user and g.user.id != recipe.id %}<span><a href="#" data-modal="rate" class="modal-open">Rate</a></span>{% endif %}
-		</div>
+		{{ profile_link(profile, seperator=False) }}
 
 		<div class="recipe-info details">
-		<span>Serves: <span>{{ recipe.servings }}</span></span>
-		<span>Time: <span>{{ recipe.time }} minutes</span></span>
-		<span>Difficulty: <span>{% if recipe.difficulty == 1 %}easy{% elif recipe.difficulty == 2 %}medium{% else %}hard{% endif %}</span></span>
+		<span>Cook: <span>{{ recipe.prepare }} minutes</span></span>
+		<span>Prepare: <span>{{ recipe.cook }} minutes</span></span>
+		<span>Serves: <span>{{ recipe.serves }}</span></span>
 		{% if recipe.vegetarian %}<span class="vegetarian"></span>{% endif %}
 		</div>
 
@@ -135,11 +94,14 @@
 	<div class="recipe-instructions">
 		<h2>Ingredients</h3>
 		<div>
+			{% for part in recipe.parts %}
+			<h3>{{ part.name }}</h3>
 			<ul>
-				{% for ingredient in recipe.ingredients %}
-				<li><p>{{ ingredient }}</p></li>
+				{% for ingredient in part.ingredients %}
+				<li><p>{{ ingredient.ingredient }}</p></li>
 				{% endfor %}
 			</ul>
+			{% endfor %}
 		</div>
 
 		<h2>Method</h3>
@@ -147,7 +109,7 @@
 			<ol>
 				{% for instruction in recipe.method %}
 				<li>
-					{% for paragraph in instruction.split('\r\n') %}
+					{% for paragraph in instruction.instruction.split('\r\n') %}
 					<p class="text">{{ paragraph }}</p>
 					{% endfor %}
 				</li>
@@ -157,42 +119,7 @@
 	</div>
 
 	<div class="recipe-comments">
-		<h2>Comments</h2>
-
-		{% if recipe.comments %}
-		{% for comment in recipe.comments %}
-		<div class="comment-card">
-			<div class="user">
-				{{ user_link(comment.user, seperator=False) }}
-				{% if g.user and (g.user.id == comment.user.id or g.user.id == recipe.user.id) %}
-				<span>
-					<form method="post" action="{{ url_for('recipe.delete_comment', recipe_id=recipe.id, comment_id=comment.id) }}" class="inline">
-						{{ delete_form.csrf_token }}
-						<button class="button light round right" title="Delete" type="submit">
-							<i class="bi bi-trash-fill"></i>
-						</button>
-					</form>
-				</span>
-				{% endif %}
-			</div>
-			<div class="body">
-				{% for p in comment.body.split('\r\n') %}
-				<p>{{ p }}</p>
-				{% endfor %}
-			</div>
-			<div class="options">
-				<span>Posted on {{ comment.created }}</span>
-			</div>
-		</div>
-		{% endfor %}
-		{% else %}
-		<p>No Comments</p>
-		{% endif %}
-
-		{% if g.user %}
-		<h2>Leave a Comment</h2>
-		{{ render_form(comment_form, 'Comment', action=url_for('recipe.comment', recipe_id=recipe.id)) }}
-		{% endif %}
+		
 	</div>
 </div>
 {% endblock %}

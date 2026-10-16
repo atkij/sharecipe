@@ -6,17 +6,17 @@
 {% call modal('update-profile-pic') %}
 <h1>Update Profile Picture</h1>
 <p>Upload an image for your profile below.</p>
-<form action="{{ url_for('account.upload_picture') }}" method="post" enctype="multipart/form-data">
+<form action="{{ url_for('settings.upload_picture') }}" method="post" enctype="multipart/form-data">
 	{{ upload_picture_form.csrf_token }}
 	{{ upload_picture_form.picture }}
-	<input type="submit" value="Update Picture">
+	<input type="submit" value="Upload Picture">
 </form>
 {% endcall %}
 
 {% call modal('delete-profile-pic') %}
 <h1>Delete Profile Picture</h1>
 <p>Are you sure you want to do this?</p>
-<form action="{{ url_for('account.delete_picture') }}" method="post">
+<form action="{{ url_for('settings.delete_picture') }}" method="post">
 	{{ delete_picture_form.csrf_token }}
 	{{ delete_picture_form.confirm }}
 </form>
@@ -31,8 +31,12 @@
 	<div class="update-profile-pic-container">
 		{{ profile_pic(g.profile) }}
 		<div class="profile-pic-buttons">
-			{{ modal_button('update-profile-pic', 'Update') }}
-			{{ modal_button('delete-profile-pic', 'Delete') }}
+			{% if g.profile.picture %}
+				{{ modal_button('update-profile-pic', 'Update') }}
+				{{ modal_button('delete-profile-pic', 'Delete') }}
+			{% else %}
+				{{ modal_button('update-profile-pic', 'Upload') }}
+			{% endif %}
 		</div>
 	</div>
 
@@ -46,9 +50,9 @@
 </form>
 {% endcall %}
 
-{{ tab_link('Password', url_for('account.password')) }}
+{{ tab_link('Password', url_for('settings.password')) }}
 
-{{ tab_link('Delete', url_for('account.delete')) }}
+{{ tab_link('Delete', url_for('settings.delete')) }}
 
 {% endcall %}
 

@@ -1,11 +1,13 @@
 from email.message import EmailMessage
-from dataclasses import dataclass
 from smtplib import SMTP_SSL
 
-from flask import current_app
+from flask import current_app, render_template
+
+def render_email(path: str, **args):
+    return render_template(path, **args)
 
 def send_email(subject: str, address: str, sender: str, body: str):
-    msg = EmailMessage()#
+    msg = EmailMessage()
 
     msg['Subject'] = subject
     msg['From'] = sender

@@ -1,183 +1,160 @@
 from dataclasses import asdict
-from flask import abort, Blueprint, current_app, flash, g, redirect, render_template, request, url_for
 from math import ceil
 from random import randint
-import os
-import uuid
 
-from ..database.database import get_db
-from ..util import resize_image
+from flask import abort, Blueprint, flash, g, redirect, render_template, request, url_for
+
+from ..controllers.recipe import RecipeController, RecipePartController, RecipeIngredientModel, RecipeInstructionController, RecipePhotoController
+from ..controllers.profile import ProfileController
+
 from ..core.auth import login_required
-
-from ..database import profiles, recipes, comments
-
-from ..forms.recipe import FavouriteForm, RecipeForm, RateForm, PhotoForm, DeleteForm, CommentForm
-from ..controllers import recipe as controllers
+from ..core.media import UnsupportedMediaError
+from ..forms.recipe import StarForm, RecipeForm, PhotoForm, DeleteForm
 
 bp = Blueprint('recipe', __name__, url_prefix='/recipe')
 
 @bp.route('/')
 def index():
-    latest_recipes = recipes.find()
+    latest_recipes = RecipeController.select_by_filter()
     
     user_recipes = None
-    favourite_recipes = None
+    starred_recipes = None
     if g.user:
-        user_recipes = recipes.find(user_id=g.user.id)
-        favourite_recipes = recipes.find(favourite_id=g.user.id)
+        user_recipes = RecipeController.select_by_filter(user_id=g.user.id)
+        #starred_recipes = recipes.find(star_id=g.user.id)
+        pass
 
     return render_template('recipe/index.html',
         latest_recipes=latest_recipes,
         user_recipes=user_recipes,
-        favourite_recipes=favourite_recipes
+        starred_recipes=starred_recipes
     )
 
 @bp.route('/<int:recipe_id>')
 def view(recipe_id):
-    recipe = recipes.find_one(recipe_id, g.user.id if g.user else None)
+    recipe = RecipeController.select_one(recipe_id)
 
     if recipe is None:
         abort(404)
 
+    profile = ProfileController.select_one(recipe.user_id)
+
     return render_template('recipe/view.html',
         recipe=recipe,
-        upload_photo_form=PhotoForm(),
-        delete_photo_form=DeleteForm(),
-        favourite_form=FavouriteForm(),
-        rate_form=RateForm(),
+        profile=profile,
+        # upload_photo_form=PhotoForm(),
+        # delete_photo_form=DeleteForm(),
+        star_form=StarForm(),
         delete_form=DeleteForm(),
-        comment_form=CommentForm(),
     )
 
-@bp.route('/<int:recipe_id>/rate', methods=('GET', 'POST'))
+@bp.route('/<int:recipe_id>/star', methods=('GET', 'POST'))
 @login_required
-def rate(recipe_id):
-    form = RateForm(request.form)
+def star(recipe_id):
+    form = StarForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        recipe = recipes.find_details(recipe_id)
+        recipe = RecipeController.select_one(recipe_id)
 
-        if g.user.id == recipe.user.id:
-            flash('You cannot rate your own recipe.', 'error')
-            return redirect(url_for('recipe.view', recipe_id=recipe_id))
-
-        recipes.rate(g.user.id, recipe.id, form.rating.data)
-
-    return redirect(url_for('recipe.view', recipe_id=recipe_id))
-
-@bp.route('/<int:recipe_id>/favourite', methods=('GET', 'POST'))
-@login_required
-def favourite(recipe_id):
-    form = FavouriteForm(request.form)
-
-    if request.method == 'POST' and form.validate():
-        recipe = recipes.find_one(recipe_id, g.user.id)
-
-        if not recipe.favourite:
-            recipes.favourite(g.user.id, recipe_id)
-            flash('Recipe added to favourites.', 'success')
+        if not recipe.star:
+            #recipes.star(g.user.id, recipe_id)
+            flash('Recipe added to starred.', 'success')
     
     return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
-@bp.route('/<int:recipe_id>/unfavourite', methods=('GET', 'POST'))
+@bp.route('/<int:recipe_id>/unstar', methods=('GET', 'POST'))
 @login_required
-def unfavourite(recipe_id):
-    form = FavouriteForm(request.form)
+def unstar(recipe_id):
+    form = StarForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        recipe = recipes.find_one(recipe_id, g.user.id)
+        recipe = RecipeController.select_one(recipe_id)
 
-        if recipe.favourite:
-            recipes.unfavourite(g.user.id, recipe_id)
-            flash('Recipe removed from favourites.', 'success')
+        if recipe.star:
+            #recipes.unstar(g.user.id, recipe_id)
+            flash('Recipe removed from starred.', 'success')
     
     return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
-@bp.route('/<int:recipe_id>/comment', methods=('GET', 'POST'))
-@login_required
-def comment(recipe_id):
-    form = CommentForm(request.form)
-
-    if request.method == 'POST' and form.validate():
-        comments.create(g.user.id, recipe_id, form.comment.data)
-        flash('New comment added.', 'success')
-    
-    return redirect(url_for('recipe.view', recipe_id=recipe_id))
-
-@bp.route('/<int:recipe_id>/comment/<int:comment_id>/delete', methods=('GET', 'POST'))
-@login_required
-def delete_comment(recipe_id, comment_id):
-    form = DeleteForm(request.form)
-
-    if request.method == 'POST' and form.validate():
-        if controllers.delete_comment(recipe_id, comment_id):
-            flash('Comment deleted.', 'success')
-
-    return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
 @bp.route('/search')
 def search():
-    params = request.args.copy()
-    params.pop('page', None)
-    params.pop('q', None)
+    abort(404)
+    return
+# @bp.route('/search')
+# def search():
+#     abort(404)
+#     return
+#     params = request.args.copy()
+#     params.pop('page', None)
+#     params.pop('q', None)
 
-    search = request.args.get('q', '').strip().lower()
-    vegetarian = request.args.get('vegetarian') == 'vegetarian' or 'veg' in search
-    user_id = request.args.get('user_id')
+#     search = request.args.get('q', '').strip().lower()
+#     vegetarian = request.args.get('vegetarian') == 'vegetarian' or 'veg' in search
+#     user_id = request.args.get('user_id')
 
-    recipess = None
-    count = int()
-    page = int()
-    pages = int()
-    limit = 60
+#     recipes = None
+#     count = int()
+#     page = int()
+#     pages = int()
+#     limit = 60
     
-    if len(search) > 100:
-        flash('Queries are restricted to 100 characters maximum.')
+#     if len(search) > 100:
+#         flash('Queries are restricted to 100 characters maximum.')
 
-    if search:
-        keywords = search[:100].split(' ')
-        keywords = list(map(lambda w: '%'+w+'%', keywords))
+#     if search:
+#         keywords = search[:100].split(' ')
+#         keywords = list(map(lambda w: '%'+w+'%', keywords))
 
-        db = get_db()
+#         db = get_db()
         
-        search = ' + '.join(['(tags IS NOT NULL AND tags LIKE ?) + (title LIKE ?) + (description IS NOT NULL AND description LIKE ?)'] * len(keywords))
-        query = f'SELECT recipe.*, user.*, ({search}) AS best_match FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE best_match > 0 AND (vegetarian = ? OR vegetarian = ?) AND (recipe.user_id = ? OR ?) ORDER BY best_match DESC LIMIT ? OFFSET ?'
+#         search = ' + '.join(['(tags IS NOT NULL AND tags LIKE ?) + (title LIKE ?) + (description IS NOT NULL AND description LIKE ?)'] * len(keywords))
+#         query = f'SELECT recipe.*, user.*, ({search}) AS best_match FROM recipe INNER JOIN user ON recipe.user_id = user.user_id WHERE best_match > 0 AND (vegetarian = ? OR vegetarian = ?) AND (recipe.user_id = ? OR ?) ORDER BY best_match DESC LIMIT ? OFFSET ?'
 
-        keywords = [i for i in keywords for _ in (0, 1, 2)]
+#         keywords = [i for i in keywords for _ in (0, 1, 2)]
 
-        recipes = db.execute(query, (*keywords, vegetarian, vegetarian + 1, user_id, not user_id, limit, ((page - 1) * limit))).fetchall()
+#         recipes = db.execute(query, (*keywords, vegetarian, vegetarian + 1, user_id, not user_id, limit, ((page - 1) * limit))).fetchall()
         
-        count = int(db.execute(
-                f'SELECT COUNT(*) FROM recipe WHERE ({search}) > 0 AND (recipe.user_id = ? OR ?)',
-                (*keywords, user_id, not user_id)
-                ).fetchone()[0])
+#         count = int(db.execute(
+#                 f'SELECT COUNT(*) FROM recipe WHERE ({search}) > 0 AND (recipe.user_id = ? OR ?)',
+#                 (*keywords, user_id, not user_id)
+#                 ).fetchone()[0])
 
-        page = int(request.args.get('page')) if request.args.get('page', '').isnumeric() else 1
-        pages = ceil(count / limit)
+#         page = int(request.args.get('page')) if request.args.get('page', '').isnumeric() else 1
+#         pages = ceil(count / limit)
 
-    return render_template('recipe/search.html', params=params, recipes=recipes, page=page, pages=pages, limit=limit, count=count)
+#     return render_template('recipe/search.html', params=params, recipes=recipes, page=page, pages=pages, limit=limit, count=count)
 
 @bp.route('/latest')
 def latest():   
     user_id = request.args.get('user_id')
-    favourite_id = request.args.get('favourite_id')
     vegetarian = request.args.get('vegetarian')
 
-    count = recipes.count(user_id, favourite_id, vegetarian)
+    if user_id is not None:
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            abort(400)
+    if vegetarian is not None:
+        try:
+            vegetarian = bool(vegetarian)
+        except ValueError:
+            abort(400)
+
+    count = RecipeController.count_by_filter(user_id, vegetarian)
     page = request.args.get('page', 1, type=int)
     limit = 60
     offset = (page - 1) * limit
     pages = ceil(count / limit)
 
-    latest_recipes = recipes.find(user_id, favourite_id, vegetarian, limit, offset)
-    profile = profiles.find(user_id)
+    recipes = RecipeController.select_by_filter(user_id, vegetarian, limit, offset)
+    profile = ProfileController.select_one(user_id)
 
     return render_template('recipe/latest.html',
-        latest_recipes=latest_recipes,
+        recipes=recipes,
         profile=profile,
         filters={
             'user_id': user_id,
-            'favourite_id': favourite_id,
             'vegetarian': vegetarian
         },
         pagination={
@@ -191,7 +168,7 @@ def latest():
 
 @bp.route('/random')
 def random():
-    count = recipes.count()
+    count = RecipeController.count_all()
 
     return redirect(url_for('recipe.view', recipe_id=randint(1, count)))
 
@@ -201,53 +178,62 @@ def create():
     form = RecipeForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        recipe_id = recipes.create(
+        recipe = RecipeController.insert(
             g.user.id,
             form.title.data,
             form.description.data,
-            form.time.data,
-            form.difficulty.data,
-            form.servings.data,
+            form.prepare.data,
+            form.cook.data,
+            form.serves.data,
             form.vegetarian.data,
-            form.ingredients.data.split('\r\n'),
-            form.method.data.split('\r\n\r\n'),
-            form.tags.data.split(',')
+            form.tags.data,
         )
 
-        return redirect(url_for('recipe.view', recipe_id=recipe_id))
+        for part in form.parts:
+            recipe_part = RecipePartController.append(recipe.id, part.name.data)
+            for instruction in part:
+                recipe_instruction = RecipeInstructionController.append(recipe_part.id, instruction.instruction.data)
+
+        for instruction in form.method:
+            recipe_instruction = RecipeInstructionController.append(recipe.id, instruction.instruction.data)
+
+        return redirect(url_for('recipe.view', recipe_id=recipe.id))
     return render_template('recipe/create.html', form=form)
 
 @bp.route('/<int:recipe_id>/update', methods=('GET', 'POST'))
 @login_required
 def update(recipe_id):
-    recipe = recipes.find_one(recipe_id)
+    recipe = RecipeController.select_one(recipe_id)
 
     if recipe is None:
         abort(404)
-    elif g.user.id != recipe.user.id:
+    if g.user.id != recipe.user_id:
         abort(403)
+
+    data = recipe.as_dict()
+
+    data['parts'] = []
+
+    for part in recipe.parts:
+        part_d = part.as_dict()
+        part_d['ingredients'] = list(map(lambda x: x.as_dict(), part.ingredients))
+        data['parts'].append(part_d)
     
-    data = asdict(recipe)
-    data['ingredients'] = '\r\n'.join(data['ingredients'])
-    data['method'] = '\r\n\r\n'.join(data['method'])
-    data['tags'] = ','.join(data['tags'])
+    data['method'] = list(map(lambda x: x.as_dict(), recipe.method))
 
     form = RecipeForm(request.form, data=data)
-    form.vegetarian.data = recipe.vegetarian
+    form.vegetarian.data = data['vegetarian']
 
     if request.method == 'POST' and form.validate():
-        recipes.update(
-            recipe_id,
-            form.title.data,
-            form.description.data,
-            form.time.data,
-            form.difficulty.data,
-            form.servings.data,
-            form.vegetarian.data,
-            form.ingredients.data.split('\r\n'),
-            form.method.data.split('\r\n\r\n'),
-            form.tags.data.split(',')
-        )
+        recipe.title = form.title.data
+        recipe.description = form.description.data
+        recipe.prepare = form.prepare.data
+        recipe.cook = form.cook.data
+        recipe.serves = form.serves.data
+        recipe.vegetarian = form.vegetarian.data
+        recipe.tags = form.tags.data
+
+        recipe.update()
 
         return redirect(url_for('recipe.view', recipe_id=recipe_id))
     return render_template('recipe/update.html', form=form)
@@ -256,54 +242,45 @@ def update(recipe_id):
 @login_required
 def delete(recipe_id):
     form = DeleteForm()
-    
-    recipe = recipes.find_details(recipe_id)
-
-    if recipe is None:
-        abort(404)
-    elif g.user.id != recipe.user.id:
-        abort(403)
 
     if request.method == 'POST' and form.validate():
-        if recipe.photo is not None:
-            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe.photo))
+        recipe = RecipeController.select_one(recipe_id)
 
-        recipes.delete(recipe_id)
+        if recipe is None:
+            abort(404)
 
-        flash('Recipe deleted successfully.', 'success')
+        if recipe.user_id != g.user.id:
+            abort(403)
+
+        recipe.delete()
+        
+        flash('Recipe deleted', 'success')
         return redirect(url_for('recipe.index'))
-    else:
-        flash('Unable to delete recipe.', 'error')
-        return redirect(url_for('recipe.view', recipe_id=recipe_id))
+        
+    return redirect(url_for('recipe.view', recipe_id=recipe_id))
 
 @bp.route('/<int:recipe_id>/photo/upload', methods=('GET','POST'))
 @login_required
 def upload_photo(recipe_id):
+    abort(404)
+    return
     form = PhotoForm()
-    recipe = recipes.find_details(recipe_id)
-    
-    if recipe is None:
-        abort(404)
-    elif g.user.id != recipe.user.id:
-        abort(403)
 
     if request.method == 'POST' and form.validate():
-        if recipe.photo is not None:
-            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe.photo))
+        recipe = RecipeController.select_one(recipe_id)
 
-        photo = form.photo.data
-        filename = str(uuid.uuid4()) + '.' + photo.filename.split('.')[-1]
+        if recipe is None:
+            abort(404)
 
-        photo = resize_image(photo.stream, 1024)
-        if photo is None:
-            flash('Unsupported image format.', 'error')
-            return redirect(url_for('recipe.view', recipe_id=recipe_id))
-        
-        photo.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+        if recipe.user_id != g.user.id:
+            abort(403)
 
-        recipes.photo(recipe_id, filename)
-
-        flash('Photo uploaded successfully.', 'success')
+        try:
+            RecipePhotoController.insert(recipe_id, form.photo.data)
+        except UnsupportedMediaError:
+            flash('Unsupported image format', 'error')
+        else:
+            flash('Recipe photo updated', 'success')
     else:
         for error in form.photo.errors:
             flash(error, 'error')
@@ -313,24 +290,20 @@ def upload_photo(recipe_id):
 @bp.route('/<int:recipe_id>/photo/delete', methods=('GET', 'POST'))
 @login_required
 def delete_photo(recipe_id):
+    abort(404)
+    return
     form = DeleteForm(request.form)
-    recipe = recipes.find_details(recipe_id)
-
-    if recipe is None:
-        abort(404)
-    elif g.user.id != recipe.user.id:
-        abort(403)
 
     if request.method == 'POST' and form.validate():
-        if recipe.photo is not None:
-            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], recipe.photo))
-
-            recipes.photo(recipe_id, None)
-
-            flash('Photo deleted successfully.', 'success')
+        try:
+            controllers.delete_photo(recipe_id)
+        except controllers.RecipeNotFound:
+            abort(404)
+        except controllers.PermissionError:
+            flash('Not your photo to delete', 'error')
+        except controllers.PhotoNotFound:
+            flash('No photo to delete', 'error')
         else:
-            flash('No photo to delete.', 'error')
-    else:
-        flash('Unable to delete photo.', 'error')
-
+            flash('Recipe photo deleted', 'success')
+    
     return redirect(url_for('recipe.view', recipe_id=recipe_id))

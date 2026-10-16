@@ -6,8 +6,8 @@
 
 {% call tab_view() %}
 
-{{ tab_link('Profile', url_for('account.profile')) }}
-{{ tab_link('Password', url_for('account.password')) }}
+{{ tab_link('Profile', url_for('settings.profile')) }}
+{{ tab_link('Password', url_for('settings.password')) }}
 
 {% call tab('Delete', default=True) %}
 <p>Are you sure you would like to delete your account?</p>

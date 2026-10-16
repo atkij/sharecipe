@@ -1,16 +1,22 @@
 DROP TABLE IF EXISTS user;
-DROP TABLE IF EXISTS verify;
 DROP TABLE IF EXISTS profile;
-DROP TABLE IF EXISTS follower;
+
 DROP TABLE IF EXISTS recipe;
-DROP TABLE IF EXISTS rating;
-DROP TABLE IF EXISTS photo;
-DROP TABLE IF EXISTS favourite;
-DROP TABLE IF EXISTS comment;
-DROP TABLE IF EXISTS reply;
+DROP TABLE IF EXISTS recipe_part;
+DROP TABLE IF EXISTS recipe_ingredient;
+DROP TABLE IF EXISTS recipe_instruction;
+DROP TABLE IF EXISTS recipe_photo;
+DROP TABLE IF EXISTS recipe_favourite;
+
+DROP TABLE IF EXISTS collection;
+DROP TABLE IF EXISTS collection_item;
+DROP TABLE IF EXISTS collection_photo;
+DROP TABLE IF EXISTS collection_favourite;
+
+DROP VIEW IF EXISTS profile_view;
 
 CREATE TABLE user (
-	user_id INTEGER NOT NULL PRIMARY KEY,
+	id INTEGER NOT NULL PRIMARY KEY,
 	email TEXT NOT NULL UNIQUE CHECK (LENGTH(email) <= 256),
 	password TEXT NOT NULL,
 	verified INTEGER NOT NULL DEFAULT 0,
@@ -18,91 +24,123 @@ CREATE TABLE user (
 	last_login TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE verify (
-	user_id INTEGER NOT NULL PRIMARY KEY,
-	code TEXT NOT NULL,
-	expires TEXT NOT NULL,
-	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
 CREATE TABLE profile (
-	user_id INTEGER NOT NULL PRIMARY KEY,
+	id INTEGER NOT NULL PRIMARY KEY,
 	name TEXT NOT NULL CHECK (LENGTH(name) <= 56),
 	bio TEXT CHECK (LENGTH(bio) <= 400),
 	picture TEXT,
-	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
-CREATE TABLE follower (
-	user_id INTEGER NOT NULL,
-	follower_id INTEGER NOT NULL,
-	CHECK (user_id != follower_id),
-	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	FOREIGN KEY (follower_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	PRIMARY KEY (user_id, follower_id)
+	FOREIGN KEY (id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE recipe (
-	recipe_id INTEGER NOT NULL PRIMARY KEY,
+	id INTEGER NOT NULL PRIMARY KEY,
 	user_id INTEGER NOT NULL,
-	title TEXT NOT NULL CHECK (LENGTH(title) <= 100),
-	photo TEXT,
-	description TEXT CHECK (LENGTH(description) <= 400),
-	ingredients TEXT NOT NULL CHECK (LENGTH(ingredients) <= 1000),
-	method TEXT NOT NULL CHECK (LENGTH(method) <= 4000),
-	time INTEGER CHECK (time > 0),
-	difficulty INTEGER CHECK (difficulty > 0 AND difficulty <= 3),
-	servings INTEGER CHECK (servings > 0),
-	vegetarian INTEGER NOT NULL CHECK (vegetarian IN (0, 1)),
-	tags TEXT CHECK (LENGTH(tags) <= 100),
+
+	title TEXT NOT NULL,
+	description TEXT,
+
+	prepare INTEGER,
+	cook INTEGER,
+	serves TEXT,
+	vegetarian INTEGER NOT NULL,
+
+	tags TEXT,
 	created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE
+
+	FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-CREATE TABLE rating (
+CREATE TABLE recipe_part (
+	id INTEGER NOT NULL PRIMARY KEY,
+	recipe_id INTEGER NOT NULL,
+
+	position INTEGER,
+	name TEXT,
+	
+	FOREIGN KEY (recipe_id) REFERENCES recipe (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE recipe_ingredient (
+	id INTEGER NOT NULL PRIMARY KEY,
+	part_id INTEGER NOT NULL,
+
+	position INTEGER NOT NULL,
+	ingredient TEXT NOT NULL,
+
+	FOREIGN KEY (part_id) REFERENCES recipe_part (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE recipe_instruction (
+	id INTEGER NOT NULL PRIMARY KEY,
+	recipe_id INTEGER NOT NULL,
+
+	position INTEGER NOT NULL,
+	instruction TEXT NOT NULL,
+
+	FOREIGN KEY (recipe_id) REFERENCES recipe (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE recipe_photo (
+	id INTEGER NOT NULL PRIMARY KEY,
+	recipe_id INTEGER NOT NULL,
+
+	position INTEGER NOT NULL,
+	photo_uri TEXT NOT NULL,
+
+	FOREIGN KEY (recipe_id) REFERENCES recipe (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE recipe_favourite (
 	user_id INTEGER NOT NULL,
 	recipe_id INTEGER NOT NULL,
-	rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
-	FOREIGN KEY (user_id) REFERENCES user (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	FOREIGN KEY (recipe_id) REFERENCES recipe (recipe_id) ON UPDATE CASCADE ON DELETE CASCADE,
+
+	FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	FOREIGN KEY (recipe_id) REFERENCES recipe (id) ON UPDATE CASCADE ON DELETE CASCADE,
 	PRIMARY KEY (user_id, recipe_id)
 );
 
-CREATE TABLE photo (
-	photo_id INTEGER NOT NULL PRIMARY KEY,
-	post_id INTEGER NOT NULL,
-	photo TEXT NOT NULL,
-	FOREIGN KEY (post_id) REFERENCES post (post_id) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
-CREATE TABLE favourite (
+CREATE TABLE collection (
+	id INTEGER NOT NULL PRIMARY KEY,
 	user_id INTEGER NOT NULL,
-	recipe_id INTEGER NOT NULL,
-	FOREIGN KEY (user_id) REFERENCES user(user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	FOREIGN KEY (recipe_id) REFERENCES recipe(recipe_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	PRIMARY KEY (user_id, recipe_id)
+
+	name TEXT NOT NULL,
+	description TEXT,
+
+	FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-CREATE TABLE comment (
-	comment_id INTEGER NOT NULL PRIMARY KEY,
+CREATE TABLE collection_item (
+	collection_id INTEGER NOT NULL,
+	recipe_id INTEGER NOT NULL,
+
+	position INTEGER NOT NULL,
+
+	FOREIGN KEY (collection_id) REFERENCES collection (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	FOREIGN KEY (recipe_id) REFERENCES recipe (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	PRIMARY KEY (collection_id, recipe_id)
+);
+
+CREATE TABLE collection_photo (
+	id INTEGER NOT NULL PRIMARY KEY,
+	collection_id INTEGER NOT NULL,
+
+	position INTEGER NOT NULL,
+	photo_uri TEXT NOT NULL,
+
+	FOREIGN KEY (collection_id) REFERENCES collection (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE collection_favourite (
 	user_id INTEGER NOT NULL,
-	recipe_id INTEGER NOT NULL,
-	body TEXT NOT NULL,
-	created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY (user_id) REFERENCES user(user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	FOREIGN KEY (recipe_id) REFERENCES recipe(recipe_id) ON UPDATE CASCADE ON DELETE CASCADE
-);
+	collection_id INTEGER NOT NULL,
 
-CREATE TABLE reply (
-	comment_id INTEGER NOT NULL,
-	reply_id INTEGER NOT NULL,
-	FOREIGN KEY (comment_id) REFERENCES comment(comment_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	FOREIGN KEY (reply_id) REFERENCES comment(comment_id) ON UPDATE CASCADE ON DELETE CASCADE,
-	PRIMARY KEY (comment_id, reply_id)
+	FOREIGN KEY (user_id) REFERENCES user (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	FOREIGN KEY (collection_id) REFERENCES collection (id) ON UPDATE CASCADE ON DELETE CASCADE,
+	PRIMARY KEY (user_id, collection_id)
 );
 
 CREATE VIEW profile_view
 AS
 SELECT profile.user_id, profile.name, profile.bio, profile.picture, user.created AS joined, user.last_login AS active
 FROM profile
-INNER JOIN user ON profile.user_id = user.user_id;
+INNER JOIN user ON profile.user_id = user.id;

@@ -1,7 +1,43 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import BooleanField, IntegerField, RadioField, StringField, TextAreaField
+from wtforms import Form, BooleanField, HiddenField, IntegerField, RadioField, StringField, TextAreaField
+from wtforms.fields import FieldList, FormField
+from wtforms.widgets import HiddenInput
 from wtforms.validators import InputRequired, Length, NumberRange, Optional
+
+class InstructionForm(Form):
+    id = IntegerField(
+        validators=[Optional()],
+        widget=HiddenInput(),
+    )
+    position =IntegerField(
+        validators=[Optional()],
+        widget=HiddenInput()
+    )
+    instruction = TextAreaField('Instruction')
+
+class IngredientForm(Form):
+    id = IntegerField(
+        validators=[Optional()],
+        widget=HiddenInput(),
+    )
+    position = IntegerField(
+        validators=[Optional()],
+        widget=HiddenInput()
+    )
+    ingredient = StringField('Ingredient')
+
+class PartForm(Form):
+    id = IntegerField(
+        validators=[Optional()],
+        widget=HiddenInput()
+    )
+    position = IntegerField(
+        validators=[Optional()],
+        widget=HiddenInput()
+    )
+    name = StringField('Part')
+    ingredients = FieldList(FormField(IngredientForm), min_entries=1)
 
 # form for creating and updating recipe
 class RecipeForm(FlaskForm):
@@ -13,50 +49,33 @@ class RecipeForm(FlaskForm):
         Optional(),
         Length(max=400, message='Desciprtion cannot exceed 400 characters'),
         ], description='Tell us more about your recipe...')
-    time = IntegerField('Time', [
+    prepare = IntegerField('Prepare', [
         Optional(),
-        NumberRange(min=0, message='Time must be positive'),
-        ], description='How long does it take to make?')
-    servings = IntegerField('Serves', [
+        NumberRange(min=0, message='Prepare must be positive'),
+        ], description='How long does it take to prepare?')
+    cook = IntegerField('Cook', [
         Optional(),
-        NumberRange(min=0, message='Servings must be positive'),
-        ], description='How many people does this serve?')
-    difficulty = IntegerField('Difficulty', [
+        NumberRange(min=0, message='Cook must be positive'),
+        ], description='How long does it take to cook?')
+    serves = StringField('Serves', [
         Optional(),
-        NumberRange(min=1, max=3, message='Difficulty must be between 1 and 3'),
-        ], description='How difficult is your recipe?')
+        Length(max=100, message='Serves cannot be more than 100 characters'),
+        ], description='How many people does your recipe serve?')
     vegetarian = BooleanField('Vegetarian', description='Is your recipe suitable for vegetarians?')
-    ingredients = TextAreaField('Ingredients', [
-        InputRequired(message='Ingredents are required'),
-        Length(max=1000, message='Ingredients cannot exceed 1000 characters'),
-        ], description='Enter the ingredients for your recipe, each on a new line')
-    method = TextAreaField('Method', [
-        InputRequired(message='Method is required'),
-        Length(max=4000, message='Method cannot exceed 4000 characters'),
-        ], description='Enter the method for your recipe, leaving a blank line between each instruction')
+    parts = FieldList(FormField(PartForm), min_entries=1)
+    method = FieldList(FormField(InstructionForm), min_entries=1)
+    # ingredients = TextAreaField('Ingredients', [
+    #     InputRequired(message='Ingredents are required'),
+    #     Length(max=1000, message='Ingredients cannot exceed 1000 characters'),
+    #     ], description='Enter the ingredients for your recipe, each on a new line')
+    # method = TextAreaField('Method', [
+    #     InputRequired(message='Method is required'),
+    #     Length(max=4000, message='Method cannot exceed 4000 characters'),
+    #     ], description='Enter the method for your recipe, leaving a blank line between each instruction')
     tags = StringField('Tags', [
         Optional(),
         Length(max=100, message='Tags must not exceed 100 characters'),
         ], description='Enter some keywords to categorise your recipe')
-
-    def filter_tags(form, field):
-        if field:
-            pretaglist = [x.strip() for x in field.split(',')]
-            taglist = []
-            d = {}
-            for tag in pretaglist:
-                if tag.lower() not in d:
-                    d[tag.lower()] = True
-                    taglist.append(tag)
-            return ','.join(taglist)
-        else:
-            return ''
-
-class CommentForm(FlaskForm):
-    comment = TextAreaField('Comment', [
-        InputRequired(message='Comment is required'),
-        Length(max=400, message='Comment cannot be more than 400 characters'),
-        ], description='Submit a new comment')
 
 # form for uploading recipe photo
 class PhotoForm(FlaskForm):
@@ -65,12 +84,7 @@ class PhotoForm(FlaskForm):
         FileAllowed(['jpg', 'jpeg', 'png'], message='Photo must be a jpg or png file.'),
         ], render_kw={'accept': 'image/jpeg,image/png'}, description='Upload a photo of your recipe')
 
-class RateForm(FlaskForm):
-    rating = RadioField('Rating', [
-        InputRequired(message='Please provide a rating'),
-        ], choices=[('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5')], description='Rate this recipe out of 5')
-
-class FavouriteForm(FlaskForm):
+class StarForm(FlaskForm):
     pass
 
 class DeleteForm(FlaskForm):

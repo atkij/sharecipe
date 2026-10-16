@@ -1276,48 +1276,6 @@ input:optional ~ .help span:after, textarea:optional ~ .help span::after {
 
 /* ---LARGE SCREENS--- */
 @media only screen and (min-width: 1400px) {
-	/* ---RECIPE ELEMENTS--- */
-	/* RECIPE VIEW */
-	.recipe {
-		display: flex;
-		flex-flow: column wrap;
-		align-content: space-between;
-	}
-
-	.recipe::before, .recipe::after {
-		content: "";
-		flex-basis: 100%;
-		width: 0;
-		order: 1;
-	}
-
-	.recipe .recipe-details {
-		/*flex: 1 1 auto;*/
-		order: 1;
-		width: 35%;
-		margin: 0;
-		padding-right: 20px;
-		padding-bottom: 20px;
-		border-right: 1px solid var(--grey);
-	}
-
-	.recipe .recipe-instructions {
-		/*flex: 1 1 auto;*/
-		order: 2;
-		width: 65%;
-		margin: 0;
-		padding-left: 20px;
-	}
-
-	.recipe .recipe-comments {
-		/*flex: 1 1 auto;*/
-		order: 1;
-		width: 35%;
-		margin: 0;
-		padding-right: 20px;
-		border-right: 1px solid var(--grey);
-	}
-
 	/* RECIPE LIST */
 	.recipe-list .recipe-card {
 		flex-basis: calc(25% - 15px);
